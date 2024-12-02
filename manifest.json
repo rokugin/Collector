@@ -1,0 +1,11 @@
+{
+  "$schema": "https://smapi.io/schemas/manifest.json",
+  "Name": "Auto Collector",
+  "Author": "rokugin",
+  "Version": "1.0.0",
+  "Description": "Adds Collector that collects various forage.",
+  "UniqueID": "rokugin.collector",
+  "EntryDll": "Collector.dll",
+  "MinimumApiVersion": "4.1.0",
+  "UpdateKeys": [ "Nexus:-1" ]
+}
