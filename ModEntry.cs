@@ -17,7 +17,7 @@ internal class ModEntry : Mod {
     public override void Entry(IModHelper helper) {
         Config = helper.ReadConfig<ModConfig>();
         SMonitor = Monitor;
-
+        
         helper.Events.GameLoop.GameLaunched += OnGameLaunched;
         //helper.Events.GameLoop.DayStarted += Collector.OnDayStarted;
         helper.Events.Input.ButtonsChanged += OnButtonsChanged;
@@ -33,7 +33,12 @@ internal class ModEntry : Mod {
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e) {
         if (Context.IsPlayerFree) {
             if (Keys.ActivateLocalCollector.JustPressed()) {
-                Collector.DoCollection(Game1.player.currentLocation);
+                //Collector.DoCollection(Game1.player.currentLocation);
+                Utility.ForEachLocation(location => {
+                    Collector.DoCollection(location);
+                    
+                    return true;
+                });
             }
             if (Keys.OpenCollectorInventory.JustPressed()) {
                 if (Collector.GetCollectorMutex().IsLocked()) return;
