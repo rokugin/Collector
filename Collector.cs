@@ -5,13 +5,13 @@ using StardewValley.Constants;
 using StardewValley.Extensions;
 using StardewValley.GameData.Crops;
 using StardewValley.GameData.Locations;
+using StardewValley.GameData.WildTrees;
 using StardewValley.Internal;
 using StardewValley.Inventories;
 using StardewValley.Menus;
 using StardewValley.Network;
 using StardewValley.Objects;
 using StardewValley.TerrainFeatures;
-using System;
 using SObject = StardewValley.Object;
 
 namespace Collector;
@@ -28,6 +28,12 @@ public class Collector {
     const int Farming = 0, Fishing = 1, Foraging = 2, Mining = 3, Combat = 4;
     const int Gatherer = 13, Botanist = 16;
 
+    bool shakeTrees = true;
+    bool harvestCrops = true;
+    bool harvestFlowers = false;
+    bool harvestSpringOnions = true;
+    bool harvestGinger = true;
+
     public void OnDayStarted(object? sender, DayStartedEventArgs e) {
         collectors.Clear();
 
@@ -42,13 +48,12 @@ public class Collector {
         });
 
         if (collectors.Count < 1) return;
-
-
     }
 
     public void DoCollection(GameLocation location) {
-        string output = $"\n====={location.DisplayName}=====\n";
+        string output = $"\n====={location.NameOrUniqueName}=====\n";
         logItems.Clear();
+        Farmer randomPlayer = Game1.random.ChooseFrom(Game1.getOnlineFarmers().ToList());
 
         foreach (var obj in location.objects.Values) {
             if (obj.isForage() || obj.IsSpawnedObject && obj.questItem.Value == false) {
@@ -90,7 +95,6 @@ public class Collector {
                     farmer.stats.Increment("ArtifactSpotsDug", 1);
                 }
 
-                Farmer randomPlayer = Game1.random.ChooseFrom(Game1.getOnlineFarmers().ToList());
                 if (randomPlayer.stats.Get("ArtifactSpotsDug") > 2 && r.NextDouble() < 0.008 +
                     (!randomPlayer.mailReceived.Contains("DefenseBookDropped") ? randomPlayer.stats.Get("ArtifactSpotsDug") * 0.002 : 0.005)) {
                     Item item = ItemRegistry.Create("(O)Book_Defense");
@@ -118,11 +122,101 @@ public class Collector {
             if (feature is HoeDirt soil && soil.crop != null) {
                 HarvestCrop(soil.crop, soil);
             }
-            if (feature is Tree tree && tree.hasSeed.Value) {
 
+            if (feature is Tree tree && shakeTrees) {
+                if (tree.hasSeed.Value && (Game1.IsMultiplayer || Game1.player.ForagingLevel >= 1)) {
+                    bool dropDefaultSeed = true;
+                    WildTreeData data = tree.GetData();
+
+                    if (data != null && data.SeedDropItems?.Count > 0) {
+                        foreach (var drop in data.SeedDropItems) {
+                            Item item = tree.TryGetDrop(drop, Game1.random, Game1.player, "SeedDropItems");
+                            if (item != null) {
+                                bool botanist = false;
+                                foreach (var farmer in Game1.getOnlineFarmers()) {
+                                    if (botanist) break;
+                                    botanist = farmer.professions.Contains(Botanist);
+                                }
+
+                                if (botanist && item.HasContextTag("forage_item")) {
+                                    item.Quality = 4;
+                                }
+
+                                StackOrAdd(logItems, item);
+                                CollectItem(item);
+
+                                if (!drop.ContinueOnDrop) {
+                                    dropDefaultSeed = false;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if (dropDefaultSeed && data != null) {
+                        Item item = ItemRegistry.Create(data.SeedItemId);
+
+                        bool botanist = false;
+                        foreach (var farmer in Game1.getOnlineFarmers()) {
+                            if (botanist) break;
+                            botanist = farmer.professions.Contains(Botanist);
+                        }
+
+                        if (botanist && item.HasContextTag("forage_item")) {
+                            item.Quality = 4;
+                        }
+
+                        StackOrAdd(logItems, item);
+                        CollectItem(item);
+
+                        bool canSpawnGoldenMysteryBox = false;
+                        foreach (var farmer in Game1.getOnlineFarmers()) {
+                            if (canSpawnGoldenMysteryBox) break;
+                            canSpawnGoldenMysteryBox = farmer.stats.Get(StatKeys.Mastery(2)) != 0;
+                        }
+
+                        if (Utility.tryRollMysteryBox(0.03)) {
+                            item = ItemRegistry.Create(canSpawnGoldenMysteryBox ? "(O)GoldenMysteryBox" : "(O)MysteryBox");
+                            StackOrAdd(logItems, item);
+                            CollectItem(item);
+                        }
+
+                        TryCollectRareObject(randomPlayer);
+
+                        if (Game1.random.NextBool() && Game1.player.team.SpecialOrderRuleActive("DROP_QI_BEANS")) {
+                            item = ItemRegistry.Create("(O)890");
+                            StackOrAdd(logItems, item);
+                            CollectItem(item);
+                        }
+
+                        tree.hasSeed.Value = false;
+                    }
+                }
+
+                if (tree.hasMoss.Value) {
+                    Item item = Tree.CreateMossItem();
+                    StackOrAdd(logItems, item);
+                    CollectItem(item);
+
+                    foreach (var farmer in Game1.getOnlineFarmers()) {
+                        farmer.gainExperience(Foraging, item.Stack);
+                    }
+
+                    tree.hasMoss.Value = false;
+                }
             }
             if (feature is FruitTree fruitTree && fruitTree.fruit.Count > 0) {
+                int fruitQuality = fruitTree.GetQuality();
 
+                for (int i = 0; i < fruitTree.fruit.Count; i++) {
+                    Item item = fruitTree.fruit[i];
+                    item.Quality = fruitQuality;
+                    StackOrAdd(logItems, item);
+                    CollectItem(item);
+                    fruitTree.fruit[i] = null;
+                }
+
+                fruitTree.fruit.Clear();
             }
         }
 
@@ -135,10 +229,6 @@ public class Collector {
 
     void HarvestCrop(Crop crop, HoeDirt soil) {
         Farmer randomPlayer = Game1.random.ChooseFrom(Game1.getOnlineFarmers().ToList());
-        bool harvestCrops = true;
-        bool harvestFlowers = false;
-        bool harvestSpringOnions = true;
-        bool harvestGinger = true;
 
         if (crop.whichForageCrop.Value == "1" && harvestSpringOnions) {
             Random r = Utility.CreateDaySaveRandom(crop.tilePosition.X * 1000, crop.tilePosition.Y * 2000);
@@ -299,27 +389,7 @@ public class Collector {
             CollectItem(item);
         }
 
-        double chanceMod = 9;
-        double dailyLuckWeight = 1;
-        double luckMod = 1 + farmer.team.AverageDailyLuck() * dailyLuckWeight;
-
-        if (farmer.stats.Get(StatKeys.Mastery(0)) != 0 && r.NextDouble() < 0.001 * chanceMod * luckMod) {
-            Item item = ItemRegistry.Create("(O)GoldenAnimalCracker");
-            StackOrAdd(logItems, item);
-            CollectItem(item);
-        }
-
-        if (Game1.stats.DaysPlayed > 2 && r.NextDouble() < 0.002 * chanceMod) {
-            Item item = Utility.getRandomCosmeticItem(r);
-            StackOrAdd(logItems, item);
-            CollectItem(item);
-        }
-
-        if (Game1.stats.DaysPlayed > 2 && r.NextDouble() < 0.0006 * chanceMod) {
-            Item item = ItemRegistry.Create("(O)SkillBook_" + r.Next(5));
-            StackOrAdd(logItems, item);
-            CollectItem(item);
-        }
+        TryCollectRareObject(farmer, r);
 
         foreach (var drop in possibleDrops) {
             if (!r.NextBool(drop.Chance) || (drop.Condition != null && !GameStateQuery.CheckConditions(drop.Condition, location, farmer, null, null, r))) {
@@ -348,6 +418,34 @@ public class Collector {
         }
     }
 
+    void TryCollectRareObject(Farmer farmer, Random r = null!) {
+        if (r == null) {
+            r = Game1.random;
+        }
+
+        double chanceMod = 9;
+        double dailyLuckWeight = 1;
+        double luckMod = 1 + farmer.team.AverageDailyLuck() * dailyLuckWeight;
+
+        if (farmer.stats.Get(StatKeys.Mastery(0)) != 0 && r.NextDouble() < 0.001 * chanceMod * luckMod) {
+            Item item = ItemRegistry.Create("(O)GoldenAnimalCracker");
+            StackOrAdd(logItems, item);
+            CollectItem(item);
+        }
+
+        if (Game1.stats.DaysPlayed > 2 && r.NextDouble() < 0.002 * chanceMod) {
+            Item item = Utility.getRandomCosmeticItem(r);
+            StackOrAdd(logItems, item);
+            CollectItem(item);
+        }
+
+        if (Game1.stats.DaysPlayed > 2 && r.NextDouble() < 0.0006 * chanceMod) {
+            Item item = ItemRegistry.Create("(O)SkillBook_" + r.Next(5));
+            StackOrAdd(logItems, item);
+            CollectItem(item);
+        }
+    }
+
     public void ShowCollectorInventory() {
         Game1.activeClickableMenu = new ItemGrabMenu(GetCollectorInventory(),
                     false, true, InventoryMenu.highlightAllItems, GrabItemFromInventory, null, GrabItemFromChest, false,
@@ -371,7 +469,6 @@ public class Collector {
         }
     }
 
-
     Item AddItem(Item item) {
         item.resetState();
         GetCollectorInventory().RemoveEmptySlots();
@@ -393,16 +490,6 @@ public class Collector {
     void CollectItem(Item item) {
         GetCollectorInventory().RemoveEmptySlots();
         StackOrAdd(GetCollectorInventory(), item);
-        //IInventory item_list = GetCollectorInventory();
-
-        //for (int i = 0; i < item_list.Count; i++) {
-        //    if (item_list[i] != null && item_list[i].canStackWith(item)) {
-        //        item_list[i].addToStack(item);
-        //        return;
-        //    }
-        //}
-
-        //item_list.Add(item);
     }
 
     void StackOrAdd(IInventory item_list, Item item) {
