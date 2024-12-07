@@ -29,10 +29,21 @@ public class Collector {
     const int Gatherer = 13, Botanist = 16;
 
     bool shakeTrees = true;
+    bool harvestMoss = true;
     bool harvestCrops = true;
     bool harvestFlowers = false;
     bool harvestSpringOnions = true;
     bool harvestGinger = true;
+    bool harvestMushroomBoxes = true;
+    bool searchGarbageCans = true;
+    bool harvestBerryBushes = true;
+    bool harvestFruitTrees = true;
+    bool collectArtifactSpots = true;
+    bool collectSeedSpots = true;
+    bool collectPanningSpots = true;
+    bool harvestSecretWoodsStumps = true;
+    bool collectFromSlimeHutches = true;
+    bool generousEnchantment = false;
 
     public void OnDayStarted(object? sender, DayStartedEventArgs e) {
         collectors.Clear();
@@ -87,7 +98,7 @@ public class Collector {
                 }
             }
 
-            if (obj.QualifiedItemId == "(O)590" || obj.QualifiedItemId == "(O)SeedSpot") {
+            if ((collectArtifactSpots && obj.QualifiedItemId == "(O)590") || (collectSeedSpots && obj.QualifiedItemId == "(O)SeedSpot")) {
                 Random r = Utility.CreateDaySaveRandom((0f - obj.TileLocation.X) * 7f, obj.TileLocation.Y * 777f,
                     Game1.netWorldState.Value.TreasureTotemsUsed * 777);
 
@@ -102,11 +113,11 @@ public class Collector {
                     CollectItem(item);
                 }
 
-                if (obj.QualifiedItemId == "(O)SeedSpot") {
+                if (collectSeedSpots && obj.QualifiedItemId == "(O)SeedSpot") {
                     Item raccoonSeedForCurrentTimeOfYear = Utility.getRaccoonSeedForCurrentTimeOfYear(Game1.player, r);
                     StackOrAdd(logItems, raccoonSeedForCurrentTimeOfYear);
                     CollectItem(raccoonSeedForCurrentTimeOfYear);
-                } else {
+                } else if (collectArtifactSpots) {
                     CollectArtifactSpot(obj.TileLocation, randomPlayer, location);
                 }
 
@@ -116,6 +127,23 @@ public class Collector {
                     farmer.gainExperience(Foraging, 15);
                 }
             }
+
+            if (harvestMushroomBoxes && obj.QualifiedItemId == "(BC)128" && obj.readyForHarvest.Value) {
+                if (obj.heldObject.Value == null) return;
+
+                Item item = obj.heldObject.Value;
+                StackOrAdd(logItems, item.getOne());
+                CollectItem(item.getOne());
+
+                foreach (var farmer in Game1.getOnlineFarmers()) {
+                    farmer.gainExperience(Foraging, 5);
+                }
+
+                obj.heldObject.Value = null;
+                obj.readyForHarvest.Value = false;
+                obj.showNextIndex.Value = false;
+                obj.ResetParentSheetIndex();
+            }
         }
 
         foreach (var feature in location.terrainFeatures.Values) {
@@ -123,8 +151,8 @@ public class Collector {
                 HarvestCrop(soil.crop, soil);
             }
 
-            if (feature is Tree tree && shakeTrees) {
-                if (tree.hasSeed.Value && (Game1.IsMultiplayer || Game1.player.ForagingLevel >= 1)) {
+            if (feature is Tree tree) {
+                if (shakeTrees && tree.hasSeed.Value && (Game1.IsMultiplayer || Game1.player.ForagingLevel >= 1)) {
                     bool dropDefaultSeed = true;
                     WildTreeData data = tree.GetData();
 
@@ -193,7 +221,7 @@ public class Collector {
                     }
                 }
 
-                if (tree.hasMoss.Value) {
+                if (harvestMoss && tree.hasMoss.Value) {
                     Item item = Tree.CreateMossItem();
                     StackOrAdd(logItems, item);
                     CollectItem(item);
@@ -205,7 +233,8 @@ public class Collector {
                     tree.hasMoss.Value = false;
                 }
             }
-            if (feature is FruitTree fruitTree && fruitTree.fruit.Count > 0) {
+
+            if (harvestFruitTrees && feature is FruitTree fruitTree && fruitTree.fruit.Count > 0) {
                 int fruitQuality = fruitTree.GetQuality();
 
                 for (int i = 0; i < fruitTree.fruit.Count; i++) {
@@ -371,7 +400,6 @@ public class Collector {
     }
 
     void CollectArtifactSpot(Vector2 tile, Farmer farmer, GameLocation location) {
-        bool generousEnchantment = false;
         Random r = Utility.CreateDaySaveRandom(tile.X * 2000, tile.Y, Game1.netWorldState.Value.TreasureTotemsUsed * 777);
         LocationData locData = location.GetData();
         ItemQueryContext itemQueryContext = new ItemQueryContext(location, farmer, r, "location '" + location.NameOrUniqueName + "' > artifact spots");
@@ -462,7 +490,7 @@ public class Collector {
 
         int oldID = ((Game1.activeClickableMenu.currentlySnappedComponent != null) ? Game1.activeClickableMenu.currentlySnappedComponent.myID : (-1));
         ShowCollectorInventory();
-        (Game1.activeClickableMenu as ItemGrabMenu).heldItem = tmp;
+        (Game1.activeClickableMenu as ItemGrabMenu)!.heldItem = tmp;
         if (oldID != -1) {
             Game1.activeClickableMenu.currentlySnappedComponent = Game1.activeClickableMenu.getComponentWithID(oldID);
             Game1.activeClickableMenu.snapCursorToCurrentSnappedComponent();
