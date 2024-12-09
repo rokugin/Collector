@@ -4,6 +4,7 @@ using StardewValley;
 using StardewValley.Constants;
 using StardewValley.Extensions;
 using StardewValley.GameData.Crops;
+using StardewValley.GameData.GarbageCans;
 using StardewValley.GameData.Locations;
 using StardewValley.GameData.WildTrees;
 using StardewValley.Internal;
@@ -12,7 +13,13 @@ using StardewValley.Menus;
 using StardewValley.Network;
 using StardewValley.Objects;
 using StardewValley.TerrainFeatures;
+using xTile.Layers;
+using xTile.Tiles;
+using xTile;
 using SObject = StardewValley.Object;
+using xTile.Dimensions;
+using StardewModdingAPI;
+using xTile.ObjectModel;
 
 namespace Collector;
 
@@ -249,11 +256,29 @@ public class Collector {
             }
         }
 
-        foreach (var item in logItems) {
-            output += $"{item.Stack}x {item.DisplayName} collected.\n";
+        if (searchGarbageCans) {
+            Tile[,] array = location.map.GetLayer("Buildings").Tiles.Array;
+            foreach (var tile in array) {
+                if (tile != null && tile.Properties.TryGetValue("Action", out PropertyValue? action) && action.ToString().StartsWith("Garbage")) {
+                    string[] fields = ArgUtility.SplitBySpace(action);
+                    string garbageCanOwner = fields[1];
+                    if (Game1.netWorldState.Value.CheckedGarbage.Add(garbageCanOwner)) {
+                        if (location.TryGetGarbageItem(garbageCanOwner, randomPlayer.DailyLuck, out Item item, out GarbageCanItemData data, out Random r)) {
+                            StackOrAdd(logItems, item);
+                            CollectItem(item);
+                        }
+                    }
+                }
+            }
         }
 
-        Log.Info(output, true);
+        if (logItems.Count > 0) {
+            foreach (var item in logItems) {
+                output += $"{item.Stack}x {item.DisplayName} collected.\n";
+            }
+
+            Log.Info(output, true);
+        }
     }
 
     void HarvestCrop(Crop crop, HoeDirt soil) {
