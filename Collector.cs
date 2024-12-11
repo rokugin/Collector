@@ -145,6 +145,7 @@ public class Collector {
             }
             CollectTreeSeed(feature);
             CollectFruitTree(feature);
+            CollectTeaBush(feature);
         }
 
         foreach (var feature in location.largeTerrainFeatures) {
@@ -463,16 +464,26 @@ public class Collector {
         return name;
     }
 
+    void CollectTeaBush(TerrainFeature feature) {
+        if (collectTeaBushes && feature is Bush bush && bush.size.Value == 3 && bush.readyForHarvest()) {
+            string shakeOff = bush.GetShakeOffItem();
+
+            if (shakeOff == null) return;
+
+            bush.tileSheetOffset.Value = 0;
+            bush.setUpSourceRect();
+            itemsToCollect.Add(ItemRegistry.Create(shakeOff));
+        }
+    }
+
     void CollectBush(TerrainFeature feature) {
         if (feature is Bush bush && bush.size.Value != 4 && bush.readyForHarvest()) {
             string shakeOff = bush.GetShakeOffItem();
+
             if (shakeOff == null) return;
+
             bush.tileSheetOffset.Value = 0;
             bush.setUpSourceRect();
-            if (collectTeaBushes && bush.size.Value == 3) {
-                Item item = ItemRegistry.Create(shakeOff);
-                itemsToCollect.Add(item);
-            }
 
             if (collectBerryBushes && bush.size.Value != 3) {
                 int number = 1 + randomPlayer.ForagingLevel / 4;
@@ -480,6 +491,7 @@ public class Collector {
                 item.Stack = number;
 
                 if (AnyBotanist()) item.Quality = 4;
+
                 itemsToCollect.Add(item);
                 OnlineFarmersGainExperience(Foraging, number);
             }
@@ -511,7 +523,6 @@ public class Collector {
                     foreach (var drop in data.SeedDropItems) {
                         Item item = tree.TryGetDrop(drop, Game1.random, Game1.player, "SeedDropItems");
                         if (item != null) {
-
                             if (AnyBotanist() && item.HasContextTag("forage_item")) {
                                 item.Quality = 4;
                             }
@@ -568,6 +579,7 @@ public class Collector {
     void CollectForageAndSpawnedObjects(SObject obj) {
         if (obj.isForage() && !collectForage) return;
         if (!obj.isForage() && !collectSpawnedObjects) return;
+
         if ((obj.isForage() || obj.IsSpawnedObject) && obj.questItem.Value == false) {
             Random r = Utility.CreateDaySaveRandom(obj.TileLocation.X, obj.TileLocation.Y * 777f);
             Item item = ItemRegistry.Create(obj.QualifiedItemId);
@@ -585,6 +597,7 @@ public class Collector {
                 OnlineFarmersGainExperience(Foraging, item.Stack * 7);
                 Game1.stats.ItemsForaged++;
             }
+
             itemsToCollect.Add(item);
             objectsToRemove.Add(obj);
         }
@@ -734,14 +747,18 @@ public class Collector {
             }
 
             int regrowDays = data?.RegrowDays ?? (-1);
+
             if (regrowDays <= 0) {
                 soil.destroyCrop(false);
                 return;
             }
+
             crop.fullyGrown.Value = true;
+
             if (crop.dayOfCurrentPhase.Value == regrowDays) {
                 crop.updateDrawMath(crop.tilePosition);
             }
+
             crop.dayOfCurrentPhase.Value = regrowDays;
         }
     }
@@ -770,9 +787,11 @@ public class Collector {
                 continue;
             }
 
-            Item item = ItemQueryResolver.TryResolveRandomItem(drop, itemQueryContext, avoidRepeat: false, null, null, null, delegate (string query, string error) {
-                Log.Error($"Location '{location.NameOrUniqueName}' failed parsing item query '{query}' for artifact spot '{drop.Id}': {error}");
-            });
+            Item item = ItemQueryResolver.TryResolveRandomItem(drop, itemQueryContext, avoidRepeat: false, null, null, null,
+                delegate (string query, string error) {
+                    Log.Error($"Location '{location.NameOrUniqueName}' failed parsing item query '{query}' for artifact spot '{drop.Id}': {error}");
+                });
+
             if (item == null) {
                 continue;
             }
@@ -828,6 +847,7 @@ public class Collector {
         int oldID = ((Game1.activeClickableMenu.currentlySnappedComponent != null) ? Game1.activeClickableMenu.currentlySnappedComponent.myID : (-1));
         ShowCollectorInventory();
         (Game1.activeClickableMenu as ItemGrabMenu)!.heldItem = tmp;
+
         if (oldID != -1) {
             Game1.activeClickableMenu.currentlySnappedComponent = Game1.activeClickableMenu.getComponentWithID(oldID);
             Game1.activeClickableMenu.snapCursorToCurrentSnappedComponent();
