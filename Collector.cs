@@ -132,6 +132,7 @@ public class Collector {
             if (location is SlimeHutch) {
                 CollectSlimeBall(obj);
             }
+            CollectCrabPot(obj);
         }
 
         foreach (var obj in objectsToRemove) {
@@ -196,6 +197,45 @@ public class Collector {
         }
     }
 
+    void CollectCrabPot(SObject obj) {
+        if (collectCrabPots && obj is CrabPot pot && pot.heldObject.Value != null) {
+            Item item = pot.heldObject.Value;
+            int number = item?.Stack ?? 1;
+
+            if (Utility.CreateDaySaveRandom(Game1.uniqueIDForThisGame, Game1.stats.DaysPlayed * 77,
+                obj.TileLocation.X * 777f + obj.TileLocation.Y).NextDouble() < 0.25 && randomPlayer.stats.Get("Book_Crabbing") != 0) {
+                number *= 2;
+            }
+
+            if (item != null) {
+                item.Stack = number;
+                pot.heldObject.Value = null;
+
+                itemsToCollect.Add(item);
+
+                if (DataLoader.Fish(Game1.content).TryGetValue(item.ItemId, out var rawDataStr)) {
+                    string[] rawData = rawDataStr.Split('/');
+                    int minFishSize = (rawData.Length <= 5) ? 1 : Convert.ToInt32(rawData[5]);
+                    int maxFishSize = (rawData.Length > 5) ? Convert.ToInt32(rawData[6]) : 10;
+                    foreach (var farmer in Game1.getOnlineFarmers()) {
+                        farmer.caughtFish(item.QualifiedItemId, Game1.random.Next(minFishSize, maxFishSize + 1), from_fish_pond: false, number);
+                    }
+                }
+
+                OnlineFarmersGainExperience(Fishing, 5);
+
+            }
+            pot.readyForHarvest.Value = false;
+            pot.tileIndexToShow = 710;
+            pot.lidFlapping = true;
+            pot.lidFlapTimer = 60f;
+            pot.bait.Value = null;
+            pot.shake = Vector2.Zero;
+            pot.shakeTimer = 0f;
+            //pot.ignoreRemovalTimer = 750; //Field is private, might need to set this with reflection
+        }
+    }
+
     void CollectSlimeBall(SObject obj) {
         if (collectSlimeBalls && obj.QualifiedItemId == "(BC)56") {
             Random r = Utility.CreateRandom(Game1.stats.DaysPlayed, Game1.uniqueIDForThisGame, obj.TileLocation.X * 77.0, obj.TileLocation.Y * 777.0, 2.0);
@@ -240,12 +280,10 @@ public class Collector {
             bool forester = false;
             foreach (var farmer in Game1.getOnlineFarmers()) {
                 if (forester) break;
-                forester = farmer.professions.Contains(Forester);
+                forester = farmer.professions.Contains(Forester) && r.NextBool();
             }
 
-            if (forester && r.NextBool()) {
-                amount++;
-            }
+            if (forester) amount++;
 
             itemsToCollect.Add(ItemRegistry.Create("(O)709", amount));
 
@@ -440,13 +478,8 @@ public class Collector {
                 int number = 1 + randomPlayer.ForagingLevel / 4;
                 Item item = ItemRegistry.Create(shakeOff).getOne();
                 item.Stack = number;
-                bool botanist = false;
-                foreach (var farmer in Game1.getOnlineFarmers()) {
-                    if (botanist) break;
-                    botanist = farmer.professions.Contains(Botanist);
-                }
 
-                if (botanist) item.Quality = 4;
+                if (AnyBotanist()) item.Quality = 4;
                 itemsToCollect.Add(item);
                 OnlineFarmersGainExperience(Foraging, number);
             }
@@ -478,13 +511,8 @@ public class Collector {
                     foreach (var drop in data.SeedDropItems) {
                         Item item = tree.TryGetDrop(drop, Game1.random, Game1.player, "SeedDropItems");
                         if (item != null) {
-                            bool botanist = false;
-                            foreach (var farmer in Game1.getOnlineFarmers()) {
-                                if (botanist) break;
-                                botanist = farmer.professions.Contains(Botanist);
-                            }
 
-                            if (botanist && item.HasContextTag("forage_item")) {
+                            if (AnyBotanist() && item.HasContextTag("forage_item")) {
                                 item.Quality = 4;
                             }
 
@@ -502,13 +530,7 @@ public class Collector {
                 if (dropDefaultSeed && data != null) {
                     Item item = ItemRegistry.Create(data.SeedItemId);
 
-                    bool botanist = false;
-                    foreach (var farmer in Game1.getOnlineFarmers()) {
-                        if (botanist) break;
-                        botanist = farmer.professions.Contains(Botanist);
-                    }
-
-                    if (botanist && item.HasContextTag("forage_item")) {
+                    if (AnyBotanist() && item.HasContextTag("forage_item")) {
                         item.Quality = 4;
                     }
 
@@ -521,15 +543,13 @@ public class Collector {
                     }
 
                     if (Utility.tryRollMysteryBox(0.03)) {
-                        item = ItemRegistry.Create(canSpawnGoldenMysteryBox ? "(O)GoldenMysteryBox" : "(O)MysteryBox");
-                        itemsToCollect.Add(item);
+                        itemsToCollect.Add(ItemRegistry.Create(canSpawnGoldenMysteryBox ? "(O)GoldenMysteryBox" : "(O)MysteryBox"));
                     }
 
                     TryCollectRareObject(feature.Tile, randomPlayer);
 
                     if (Game1.random.NextBool() && Game1.player.team.SpecialOrderRuleActive("DROP_QI_BEANS")) {
-                        item = ItemRegistry.Create("(O)890");
-                        itemsToCollect.Add(item);
+                        itemsToCollect.Add(ItemRegistry.Create("(O)890"));
                     }
 
                     tree.hasSeed.Value = false;
@@ -581,13 +601,11 @@ public class Collector {
 
             if (randomPlayer.stats.Get("ArtifactSpotsDug") > 2 && r.NextDouble() < 0.008 +
                     (!randomPlayer.mailReceived.Contains("DefenseBookDropped") ? randomPlayer.stats.Get("ArtifactSpotsDug") * 0.002 : 0.005)) {
-                Item item = ItemRegistry.Create("(O)Book_Defense");
-                itemsToCollect.Add(item);
+                itemsToCollect.Add(ItemRegistry.Create("(O)Book_Defense"));
             }
 
             if (collectSeedSpots && obj.QualifiedItemId == "(O)SeedSpot") {
-                Item item = Utility.getRaccoonSeedForCurrentTimeOfYear(Game1.player, r);
-                itemsToCollect.Add(item);
+                itemsToCollect.Add(Utility.getRaccoonSeedForCurrentTimeOfYear(Game1.player, r));
             } else if (collectArtifactSpots) {
                 CollectArtifactSpot(obj.TileLocation, randomPlayer, obj.Location);
             }
@@ -602,8 +620,7 @@ public class Collector {
         if (collectMushroomBoxes && obj.QualifiedItemId == "(BC)128" && obj.readyForHarvest.Value) {
             if (obj.heldObject.Value == null) return;
 
-            Item item = obj.heldObject.Value;
-            itemsToCollect.Add(item);
+            itemsToCollect.Add(obj.heldObject.Value);
             OnlineFarmersGainExperience(Foraging, 5);
             obj.heldObject.Value = null;
             obj.readyForHarvest.Value = false;
@@ -650,9 +667,7 @@ public class Collector {
             double chanceForSilverQuality = Math.Min(0.75, chanceForGoldQuality * 2.0);
             int cropQuality = 0;
 
-            if (ItemRegistry.GetDataOrErrorItem(data.HarvestItemId).Category == -80 && !collectFlowers) {
-                return;
-            }
+            if (ItemRegistry.GetDataOrErrorItem(data.HarvestItemId).Category == -80 && !collectFlowers) return;
 
             if (fertilizerQualityLevel >= 3 && r.NextDouble() < chanceForGoldQuality / 2.0) {
                 cropQuality = 4;
@@ -702,9 +717,7 @@ public class Collector {
 
             float experience = (float)(16.0 * Math.Log(0.018 * (double)price + 1.0, Math.E));
 
-            foreach (var farmer in Game1.getOnlineFarmers()) {
-                farmer.gainExperience(Farming, (int)Math.Round(experience));
-            }
+            OnlineFarmersGainExperience(Farming, (int)Math.Round(experience));
 
             for (int i = 0; i < numToHarvest - 1; i++) {
                 itemsToCollect.Add(harvestedItem);
@@ -712,14 +725,12 @@ public class Collector {
 
             if (crop.indexOfHarvest.Value == "771") {
                 if (r.NextDouble() < 0.1) {
-                    Item item = ItemRegistry.Create("(O)770");
-                    itemsToCollect.Add(item);
+                    itemsToCollect.Add(ItemRegistry.Create("(O)770"));
                 }
             }
 
             if (crop.indexOfHarvest.Value == "262" && r.NextDouble() < 0.4) {
-                Item item = ItemRegistry.Create("(O)178");
-                itemsToCollect.Add(item);
+                itemsToCollect.Add(ItemRegistry.Create("(O)178"));
             }
 
             int regrowDays = data?.RegrowDays ?? (-1);
@@ -749,8 +760,7 @@ public class Collector {
         possibleDrops = possibleDrops.OrderBy((ArtifactSpotDropData p) => p.Precedence);
 
         if (Game1.player.mailReceived.Contains("sawQiPlane") && r.NextDouble() < 0.05 + Game1.player.team.AverageDailyLuck() / 2.0) {
-            Item item = ItemRegistry.Create("(O)MysteryBox", r.Next(1, 3));
-            itemsToCollect.Add(item);
+            itemsToCollect.Add(ItemRegistry.Create("(O)MysteryBox", r.Next(1, 3)));
         }
 
         TryCollectRareObject(tile, farmer, r);
@@ -789,18 +799,15 @@ public class Collector {
         double luckMod = 1 + farmer.team.AverageDailyLuck() * dailyLuckWeight;
 
         if (farmer.stats.Get(StatKeys.Mastery(0)) != 0 && r.NextDouble() < 0.001 * chanceMod * luckMod) {
-            Item item = ItemRegistry.Create("(O)GoldenAnimalCracker");
-            itemsToCollect.Add(item);
+            itemsToCollect.Add(ItemRegistry.Create("(O)GoldenAnimalCracker"));
         }
 
         if (Game1.stats.DaysPlayed > 2 && r.NextDouble() < 0.002 * chanceMod) {
-            Item item = Utility.getRandomCosmeticItem(r);
-            itemsToCollect.Add(item);
+            itemsToCollect.Add(Utility.getRandomCosmeticItem(r));
         }
 
         if (Game1.stats.DaysPlayed > 2 && r.NextDouble() < 0.0006 * chanceMod) {
-            Item item = ItemRegistry.Create("(O)SkillBook_" + r.Next(5));
-            itemsToCollect.Add(item);
+            itemsToCollect.Add(ItemRegistry.Create("(O)SkillBook_" + r.Next(5)));
         }
     }
 
