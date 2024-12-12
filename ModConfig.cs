@@ -12,7 +12,7 @@ internal class ModConfig {
     public bool CollectSpawnedObjects { get; set; } = true;
     public bool CollectSpringOnions { get; set; } = true;
     public bool CollectGinger { get; set; } = true;
-    public bool CollectTreeSeeds { get; set; } = true;
+    public bool CollectTreeForage { get; set; } = true;
     public bool CollectMoss { get; set; } = true;
     public bool CollectFruitTrees { get; set; } = true;
     public bool CollectArtifactSpots { get; set; } = true;

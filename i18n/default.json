@@ -1,3 +1,26 @@
 {
-  "placeholder": "text"
+  "crops": "Crops",
+  "spring-onions": "Spring Onions",
+  "ginger": "Ginger",
+  "flowers": "Flowers",
+  "spawned-objects": "Spawned Objects",
+  "spawned-objects.desc": "Non-forage objects, like gems and minerals.",
+  "forage": "Forage",
+  "artifact-spots": "Artifact Spots",
+  "seed-spots": "Seed Spots",
+  "tree-forage": "Tree Forage",
+  "tree-forage.desc": "Items from shaking trees, like seeds and Hazelnuts.",
+  "fruit-trees": "Fruit Trees",
+  "moss": "Moss",
+  "mushroom-boxes": "Mushroom Boxes",
+  "garbage-cans": "Garbage Cans",
+  "berry-bushes": "Berry Bushes",
+  "tea-bushes": "Tea Bushes",
+  "panning-spots": "Panning Spots",
+  "secret-woods-stumps": "Secret Woods Stumps",
+  "slime-balls": "Slime Balls",
+  "slime-balls.desc": "Slime Balls created by Slime inside Slime Hutches",
+  "garden-pots": "Garden Pots",
+  "garden-pots.desc": "Couples with Crops, Forage and Tea Bushes to determine what can be collected.",
+  "crab-pots": "Crab Pots"
 }
