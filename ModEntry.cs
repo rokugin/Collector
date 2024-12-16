@@ -9,7 +9,6 @@ using SObject = StardewValley.Object;
 namespace Collector;
 
 internal class ModEntry : Mod {
-    // TODO: Stop majority of functionality if not host/primary player
     public static IMonitor SMonitor = null!;
     public static ModConfig Config = null!;
     public static ModConfigKeys Keys => Config.Controls;
@@ -31,12 +30,15 @@ internal class ModEntry : Mod {
         helper.Events.World.ObjectListChanged += OnObjectListChanged;
 
         var harmony = new Harmony(ModManifest.UniqueID);
-
+        // patch to allow right clicking Collector to open inventory
         harmony.Patch(original: AccessTools.Method(typeof(SObject), nameof(SObject.checkForAction)),
             prefix: new HarmonyMethod(typeof(ObjectPatch), nameof(ObjectPatch.CheckForAction_Prefix)));
     }
 
     private void OnObjectListChanged(object? sender, ObjectListChangedEventArgs e) {
+        if (!Context.IsMainPlayer) return;
+        // when adding a new object to a location, if it's a Collector check if the location is already on the list and add it if not
+        // perform collection function if location is added to list
         foreach (var pair in e.Added) {
             if (pair.Value.QualifiedItemId == CollectorID) {
                 if (!collectorLocations.Contains(e.Location)) {
@@ -51,7 +53,8 @@ internal class ModEntry : Mod {
                 }
             }
         }
-
+        // when removing an object from a location, if it's a Collector check if there are any other Collectors in the location
+        // remove the location from the list if the last Collector is removed from the location
         foreach (var pair in e.Removed) {
             if (pair.Value.QualifiedItemId == CollectorID) {
                 bool duplicate = false;
@@ -72,8 +75,9 @@ internal class ModEntry : Mod {
     }
 
     private void OnTimeChanged(object? sender, TimeChangedEventArgs e) {
+        if (!Context.IsMainPlayer) return;
         if (!Config.CollectPanningSpots) return;
-
+        // perform panning spot collection function in either every location or each location in the list
         DelayedAction action = new DelayedAction(500);
         action.behavior = () => {
             List<Item> items = new();
@@ -112,6 +116,7 @@ internal class ModEntry : Mod {
     }
 
     private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e) {
+        // release mutex lock if nobody has the inventory open
         if (Context.IsWorldReady) {
             if (Collector.GetCollectorMutex().IsLocked() && Collector.GetCollectorMutex().IsLockHeld() && Game1.activeClickableMenu == null) {
                 Collector.GetCollectorMutex().ReleaseLock();
@@ -121,7 +126,7 @@ internal class ModEntry : Mod {
 
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e) {
         if (Context.IsPlayerFree) {
-            if (Config.AllowGlobalCollector && Keys.ActivateGlobalCollector.JustPressed()) {
+            if (Context.IsMainPlayer && Config.AllowGlobalCollector && Keys.ActivateGlobalCollector.JustPressed()) {
                 Utility.ForEachLocation(location => {
                     Collector.DoCollection(location);
 
@@ -135,13 +140,15 @@ internal class ModEntry : Mod {
     }
 
     public void OnDayStarted(object? sender, DayStartedEventArgs e) {
-        collectorLocations.Clear();
+        if (!Context.IsMainPlayer) return;
 
+        collectorLocations.Clear();
+        // iterate every location, add location to list if it has a Collector
         Utility.ForEachLocation(location => {
             foreach (var obj in location.objects.Pairs) {
                 if (obj.Value.QualifiedItemId == CollectorID) {
-                    if (!collectorLocations.Contains(obj.Value.Location)) {
-                        collectorLocations.Add(obj.Value.Location);
+                    if (!collectorLocations.Contains(location)) {
+                        collectorLocations.Add(location);
                     }
                     break;
                 }
@@ -159,7 +166,7 @@ internal class ModEntry : Mod {
         }
 
         Log.Info(output);
-
+        // iterate list of locations and perform collection in each location
         DelayedAction action = new DelayedAction(2000);
         action.behavior = () => {
             foreach (var location in collectorLocations) {
