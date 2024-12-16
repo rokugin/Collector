@@ -186,7 +186,7 @@ public class Collector {
                 output += $"{item.Stack}x {(item.Quality != 0 ? GetQualityName(item.Quality) + " " : "")}{item.DisplayName} collected.\n";
             }
 
-            Log.Info(output);
+            Log.Info(output, config.CollectionLogging);
         }
     }
 

@@ -17,7 +17,7 @@ public static class ObjectPatch {
 
             return true;
         } catch (Exception e) {
-            Log.Error($"Exception in CheckForAction_Prefix:\n{e.Message}", true);
+            Log.Error($"Exception in CheckForAction_Prefix:\n{e.Message}");
         }
         return true;
     }

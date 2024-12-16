@@ -48,7 +48,7 @@ internal class ModEntry : Mod {
                         Collector.DoCollection(e.Location);
                     };
                     Game1.delayedActions.Add(action);
-                    Log.Info($"\n{e.Location.NameOrUniqueName} added to Collector Locations.\n");
+                    Log.Info($"\n{e.Location.NameOrUniqueName} added to Collector Locations.\n", Config.InformationalLogging);
                     return;
                 }
             }
@@ -67,7 +67,7 @@ internal class ModEntry : Mod {
 
                 if (!duplicate) {
                     collectorLocations.Remove(e.Location);
-                    Log.Info($"\n{e.Location.NameOrUniqueName} removed from Collector Locations.\n");
+                    Log.Info($"\n{e.Location.NameOrUniqueName} removed from Collector Locations.\n", Config.InformationalLogging);
                     return;
                 }
             }
@@ -109,7 +109,7 @@ internal class ModEntry : Mod {
                     output += $"{item.Stack}x {(item.Quality != 0 ? Collector.GetQualityName(item.Quality) + " " : "")}{item.DisplayName} collected.\n";
                 }
 
-                Log.Info(output);
+                Log.Info(output, Config.PanningLogging);
             }
         };
         Game1.delayedActions.Add(action);
@@ -165,7 +165,7 @@ internal class ModEntry : Mod {
             output += $"{location.NameOrUniqueName}\n";
         }
 
-        Log.Info(output);
+        Log.Info(output, Config.InformationalLogging);
         // iterate list of locations and perform collection in each location
         DelayedAction action = new DelayedAction(2000);
         action.behavior = () => {
@@ -178,7 +178,7 @@ internal class ModEntry : Mod {
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e) {
         if (!Helper.ModRegistry.IsLoaded("rokugin.collectorcp")) {
-            Log.Warn("\nCP component missing, please check your installation. Mod will only function if cheats are enabled.", true);
+            Log.Warn("\nCP component missing, please check your installation. Mod will only function if cheats are enabled.");
         }
 
         var api = this.Helper.ModRegistry.GetApi<IContentPatcherAPI>("Pathoschild.ContentPatcher");
@@ -224,8 +224,17 @@ internal class ModEntry : Mod {
             () => I18n.InventoryAnywhere_Func(), () => I18n.InventoryAnywhere_FuncDesc());
 
         cm.AddPage(ModManifest, "Debugging", () => I18n.Debugging());
-        cm.AddBoolOption(ModManifest, () => Config.Logging, v => Config.Logging = v,
-            () => I18n.Logging(), () => I18n.Logging_Desc());
+        cm.AddBoolOption(ModManifest, () => Config.AllLogging, v => Config.AllLogging = v,
+            () => I18n.AllLogging(), () => I18n.AllLogging_Desc());
+
+        cm.AddBoolOption(ModManifest, () => Config.InformationalLogging, v => Config.InformationalLogging = v,
+            () => I18n.InformationalLogging(), () => I18n.InformationalLogging_Desc());
+
+        cm.AddBoolOption(ModManifest, () => Config.CollectionLogging, v => Config.CollectionLogging = v,
+            () => I18n.CollectionLogging(), () => I18n.CollectionLogging_Desc());
+
+        cm.AddBoolOption(ModManifest, () => Config.PanningLogging, v => Config.PanningLogging = v,
+            () => I18n.PanningLogging(), () => I18n.PanningLogging_Desc());
 
         cm.AddPage(ModManifest, "CollectorSettings", () => I18n.CollectorSettings());
         cm.AddBoolOption(ModManifest, () => Config.CollectArtifactSpots, v => Config.CollectArtifactSpots = v,

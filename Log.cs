@@ -26,17 +26,22 @@ static class Log {
     /// Log an Error (red) message indicating something went wrong.
     /// </summary>
     /// <param name="message">The message to log.</param>
-    /// <param name="alwaysShow">Whether to show the message regardless of config settings. Defaults to <c>false</c>.</param>
-    public static void Error(string message, bool alwaysShow = false) {
+    /// <param name="alwaysShow">Whether to show the message regardless of config settings. Defaults to <c>true</c>.</param>
+    public static void Error(string message, bool alwaysShow = true) {
         ModEntry.SMonitor.Log(message, DesiredLogLevel(alwaysShow, LogLevel.Error));
     }
 
-    public static void Warn(string message, bool alwaysShow = false) {
+    /// <summary>
+    /// Log a Warn (yellow) message indicating there's an issue the player should be made aware of.
+    /// </summary>
+    /// <param name="message">The message to log.</param>
+    /// <param name="alwaysShow">Whether to show the message regardless of config settings. Defaults to <c>true</c>.</param>
+    public static void Warn(string message, bool alwaysShow = true) {
         ModEntry.SMonitor.Log(message, DesiredLogLevel(alwaysShow, LogLevel.Warn));
     }
 
     static LogLevel DesiredLogLevel(bool alwaysShow, LogLevel logLevel) {
-        return alwaysShow ? logLevel : ModEntry.Config.Logging ? logLevel : LogLevel.Trace;
+        return alwaysShow ? logLevel : ModEntry.Config.AllLogging ? logLevel : LogLevel.Trace;
     }
 
 }

@@ -2,7 +2,10 @@
 
 internal class ModConfig {
 
-    public bool Logging { get; set; } = false;
+    public bool AllLogging { get; set; } = false;
+    public bool CollectionLogging { get; set; } = false;
+    public bool PanningLogging { get; set; } = false;
+    public bool InformationalLogging { get; set; } = false;
 
     public ModConfigKeys Controls { get; set; } = new();
 
