@@ -1,15 +1,19 @@
-﻿using StardewModdingAPI;
+﻿using Collector.Patches;
+using ContentPatcher;
+using HarmonyLib;
+using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
+using SObject = StardewValley.Object;
 
 namespace Collector;
 
 internal class ModEntry : Mod {
-
+    // TODO: Stop majority of functionality if not host/primary player
     public static IMonitor SMonitor = null!;
     public static ModConfig Config = null!;
     public static ModConfigKeys Keys => Config.Controls;
-    public static string CollectorID = "(BC)165";//"(BC)rokugin.collector_Collector";
+    public static string CollectorID = "(BC)rokugin.collectorcp_Collector";
 
     Collector Collector = new();
     List<GameLocation> collectorLocations = new();
@@ -25,6 +29,11 @@ internal class ModEntry : Mod {
         helper.Events.GameLoop.UpdateTicked += OnUpdateTicked;
         helper.Events.GameLoop.TimeChanged += OnTimeChanged;
         helper.Events.World.ObjectListChanged += OnObjectListChanged;
+
+        var harmony = new Harmony(ModManifest.UniqueID);
+
+        harmony.Patch(original: AccessTools.Method(typeof(SObject), nameof(SObject.checkForAction)),
+            prefix: new HarmonyMethod(typeof(ObjectPatch), nameof(ObjectPatch.CheckForAction_Prefix)));
     }
 
     private void OnObjectListChanged(object? sender, ObjectListChangedEventArgs e) {
@@ -36,6 +45,7 @@ internal class ModEntry : Mod {
                     action.behavior = () => {
                         Collector.DoCollection(e.Location);
                     };
+                    Game1.delayedActions.Add(action);
                     Log.Info($"\n{e.Location.NameOrUniqueName} added to Collector Locations.\n");
                     return;
                 }
@@ -102,8 +112,10 @@ internal class ModEntry : Mod {
     }
 
     private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e) {
-        if (Collector.GetCollectorMutex().IsLocked() && Collector.GetCollectorMutex().IsLockHeld() && Game1.activeClickableMenu == null) {
-            Collector.GetCollectorMutex().ReleaseLock();
+        if (Context.IsWorldReady) {
+            if (Collector.GetCollectorMutex().IsLocked() && Collector.GetCollectorMutex().IsLockHeld() && Game1.activeClickableMenu == null) {
+                Collector.GetCollectorMutex().ReleaseLock();
+            }
         }
     }
 
@@ -158,15 +170,40 @@ internal class ModEntry : Mod {
     }
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e) {
+        if (!Helper.ModRegistry.IsLoaded("rokugin.collectorcp")) {
+            Log.Warn("\nCP component missing, please check your installation. Mod will only function if cheats are enabled.", true);
+        }
+
+        var api = this.Helper.ModRegistry.GetApi<IContentPatcherAPI>("Pathoschild.ContentPatcher");
+
+        api?.RegisterToken(ModManifest, "GrabberRecipes", () => {
+            if (Config.GrabberRecipes) {
+                return new[] { "true" };
+            } else {
+                return new[] { "false" };
+            }
+        });
+
+        api?.RegisterToken(ModManifest, "Collector", () => {
+            return new[] { I18n.Collector() };
+        });
+
         var cm = Helper.ModRegistry.GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
 
         if (cm is null) return;
         
         cm.Register(ModManifest, () => Config = new ModConfig(), () => Helper.WriteConfig(Config));
 
-        cm.AddPageLink(ModManifest, "CollectorSettings", () => I18n.CollectorSettings());
+        cm.AddPageLink(ModManifest, "GeneralSettings", () => I18n.GeneralSettings());
+        cm.AddPageLink(ModManifest, "CollectorSettings", () => I18n.CollectorSettings(), () => I18n.CollectorSettings_Desc());
+        cm.AddPageLink(ModManifest, "Cheats", () => I18n.Cheats());
+        cm.AddPageLink(ModManifest, "Debugging", () => I18n.Debugging());
 
-        cm.AddSectionTitle(ModManifest, () => "Cheats");
+        cm.AddPage(ModManifest, "GeneralSettings", () => I18n.GeneralSettings());
+        cm.AddBoolOption(ModManifest, () => Config.GrabberRecipes, v => Config.GrabberRecipes = v,
+            () => I18n.GrabberRecipes(), () => I18n.GrabberRecipes_Desc());
+
+        cm.AddPage(ModManifest, "Cheats", () => I18n.Cheats());
         cm.AddBoolOption(ModManifest, () => Config.AllowGlobalCollector, v => Config.AllowGlobalCollector = v,
             () => I18n.GlobalCollector(), () => I18n.GlobalCollector_Desc());
 
@@ -179,7 +216,7 @@ internal class ModEntry : Mod {
         cm.AddKeybindList(ModManifest, () => Config.Controls.OpenCollectorInventory, v => Config.Controls.OpenCollectorInventory = v,
             () => I18n.InventoryAnywhere_Func(), () => I18n.InventoryAnywhere_FuncDesc());
 
-        cm.AddSectionTitle(ModManifest, () => I18n.Debugging());
+        cm.AddPage(ModManifest, "Debugging", () => I18n.Debugging());
         cm.AddBoolOption(ModManifest, () => Config.Logging, v => Config.Logging = v,
             () => I18n.Logging(), () => I18n.Logging_Desc());
 

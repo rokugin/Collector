@@ -6,6 +6,8 @@ internal class ModConfig {
 
     public ModConfigKeys Controls { get; set; } = new();
 
+    public bool GrabberRecipes { get; set; } = false;
+
     public bool CollectCrops { get; set; } = true;
     public bool CollectFlowers { get; set; } = false;
     public bool CollectForage { get; set; } = true;

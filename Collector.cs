@@ -943,23 +943,17 @@ public class Collector {
         }
     }
 
-    public void TryOpenCollectorInventory() {
-        if (GetCollectorMutex().IsLocked()) {
-            Game1.showRedMessage("In use by another player.");
-            return;
-        }
-        GetCollectorMutex().RequestLock(() => {
-            ShowCollectorInventory();
-        });
+    public static void TryOpenCollectorInventory() {
+        GetCollectorMutex().RequestLock(() => { ShowCollectorInventory(); }, () => { Game1.showRedMessage("In use by another player."); });
     }
 
-    public void ShowCollectorInventory() {
+    public static void ShowCollectorInventory() {
         Game1.activeClickableMenu = new ItemGrabMenu(GetCollectorInventory(),
                     false, true, InventoryMenu.highlightAllItems, GrabItemFromInventory, null, GrabItemFromChest, false,
                     true, true, true, true, 1, null, -1, "rokugin.collector", allowExitWithHeldItem: true);
     }
 
-    public void GrabItemFromInventory(Item item, Farmer farmer) {
+    public static void GrabItemFromInventory(Item item, Farmer farmer) {
         if (item.Stack == 0) item.Stack = 1;
 
         Item tmp = AddItem(item);
@@ -977,7 +971,7 @@ public class Collector {
         }
     }
 
-    public Item AddItem(Item item) {
+    public static Item AddItem(Item item) {
         item.resetState();
         GetCollectorInventory().RemoveEmptySlots();
         IInventory item_list = GetCollectorInventory();
@@ -995,7 +989,7 @@ public class Collector {
         return null!;
     }
 
-    public void GrabItemFromChest(Item item, Farmer farmer) {
+    public static void GrabItemFromChest(Item item, Farmer farmer) {
         if (farmer.couldInventoryAcceptThisItem(item)) {
             GetCollectorInventory().Remove(item);
             GetCollectorInventory().RemoveEmptySlots();
@@ -1003,7 +997,7 @@ public class Collector {
         }
     }
 
-    public IInventory GetCollectorInventory() {
+    public static IInventory GetCollectorInventory() {
         return Game1.player.team.GetOrCreateGlobalInventory(CollectorID);
     }
 

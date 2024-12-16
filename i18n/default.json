@@ -50,5 +50,11 @@
   "logging": "Logging",
   "logging.desc": "Enables console logging.\nDefault: false",
   "debugging": "Debugging",
-  "collector-settings": "Collector Settings"
+  "collector-settings": "Collector Settings",
+  "collector-settings.desc": "Change what's collected.",
+  "cheats": "Cheats",
+  "grabber-recipes": "Enable Grabber Recipes",
+  "grabber-recipes.desc": "Recipes to convert from Auto-Grabber to Collector and back again.\nDefault: false",
+  "general-settings": "General Settings",
+  "collector": "Collector"
 }

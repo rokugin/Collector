@@ -31,6 +31,10 @@ static class Log {
         ModEntry.SMonitor.Log(message, DesiredLogLevel(alwaysShow, LogLevel.Error));
     }
 
+    public static void Warn(string message, bool alwaysShow = false) {
+        ModEntry.SMonitor.Log(message, DesiredLogLevel(alwaysShow, LogLevel.Warn));
+    }
+
     static LogLevel DesiredLogLevel(bool alwaysShow, LogLevel logLevel) {
         return alwaysShow ? logLevel : ModEntry.Config.Logging ? logLevel : LogLevel.Trace;
     }

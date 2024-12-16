@@ -4,18 +4,22 @@
 		<TargetFramework>net6.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<EnableHarmony>true</EnableHarmony>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<None Remove=".gitattributes" />
 		<None Remove=".gitignore" />
-		<None Remove="i18n\default.json" />
 		<None Remove="LICENSE" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.3.2" />
 		<PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.2.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ContentPacks Include="[CP] Collector" Version="$(Version)" />
 	</ItemGroup>
 
 	<ProjectExtensions>
