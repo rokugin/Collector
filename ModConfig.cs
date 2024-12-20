@@ -11,6 +11,7 @@ internal class ModConfig {
 
     public bool GrabberRecipes { get; set; } = false;
 
+    public bool CollectAnimalProduce { get; set; } = true;
     public bool CollectCrops { get; set; } = true;
     public bool CollectFlowers { get; set; } = false;
     public bool CollectForage { get; set; } = true;

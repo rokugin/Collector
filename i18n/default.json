@@ -1,4 +1,6 @@
 {
+  "animal-produce": "Animal Produce",
+  "animal-produce.desc": "Non-dropped animal produce, like milk and wool.\nDefault: true",
   "crops": "Crops",
   "crops.desc": "Default: true",
   "spring-onions": "Spring Onions",

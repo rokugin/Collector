@@ -16,6 +16,7 @@ using xTile.Tiles;
 using SObject = StardewValley.Object;
 using xTile.ObjectModel;
 using StardewValley.Locations;
+using StardewValley.GameData.FarmAnimals;
 
 namespace Collector;
 
@@ -34,6 +35,7 @@ public class Collector {
     const int Farming = 0, Fishing = 1, Foraging = 2, Mining = 3, Combat = 4;
     const int Forester = 12, Gatherer = 13, Botanist = 16;
 
+    bool collectAnimalProduce => config.CollectAnimalProduce;
     bool collectForage => config.CollectForage;
     bool collectSpawnedObjects => config.CollectSpawnedObjects;
     bool collectTreeForage => config.CollectTreeForage;
@@ -122,7 +124,7 @@ public class Collector {
         }
         return name;
     }
-
+    
     public void DoCollection(GameLocation location) {
         string output = $"\n====={location.NameOrUniqueName}=====\n";
         itemsToCollect.Clear();
@@ -142,6 +144,10 @@ public class Collector {
 
         foreach (var obj in objectsToRemove) {
             location.objects.Remove(obj.TileLocation);
+        }
+
+        foreach (var animal in location.animals.Values) {
+            CollectAnimalProduce(animal);
         }
 
         foreach (var feature in location.terrainFeatures.Values) {
@@ -187,6 +193,29 @@ public class Collector {
             }
 
             Log.Info(output, config.CollectionLogging);
+        }
+    }
+
+    public void CollectAnimalProduce(FarmAnimal animal) {
+        try {
+            if (collectAnimalProduce) {
+                if (animal.GetHarvestType().GetValueOrDefault() == FarmAnimalHarvestType.HarvestWithTool && animal.currentProduce.Value != null) {
+                    Item item = ItemRegistry.Create("(O)" + animal.currentProduce.Value);
+                    item.Quality = animal.produceQuality.Value;
+
+                    if (animal.hasEatenAnimalCracker.Value) {
+                        item.Stack = 2;
+                    }
+
+                    itemsToCollect.Add(item);
+                    animal.HandleStatsOnProduceCollected(item, (uint)item.Stack);
+                    animal.currentProduce.Value = null;
+                    animal.ReloadTextureIfNeeded();
+                }
+            }
+        }
+        catch (Exception e) {
+            Log.Error($"\nException in CollectAnimalProduce.\nError message:\n{e.Message}");
         }
     }
 
@@ -660,7 +689,7 @@ public class Collector {
                 Random r = Utility.CreateDaySaveRandom(obj.TileLocation.X, obj.TileLocation.Y * 777f);
                 Item item = ItemRegistry.Create(obj.QualifiedItemId);
                 int quality = GetHarvestedSpawnedObjectQuality(obj.isForage(), obj.TileLocation, r);
-                item.Quality = quality;
+                item.Quality = obj.isForage() ? quality : obj.Quality;
 
                 if (obj.isForage()) {
                     bool gatherer = false;
@@ -680,6 +709,8 @@ public class Collector {
                     if (gatherer) OnlineFarmersGainExperience(Foraging, 7);
 
                     Game1.stats.ItemsForaged++;
+                } else {
+                    item.Stack = obj.Stack;
                 }
 
                 itemsToCollect.Add(item);
@@ -865,7 +896,7 @@ public class Collector {
             Log.Error($"\nException in CollectCrop.\nError message:\n{e.Message}");
         }
     }
-    
+
     public void CollectArtifactSpot(Vector2 tile, Farmer farmer, GameLocation location) {
         try {
             Random r = Utility.CreateDaySaveRandom(tile.X * 2000, tile.Y, Game1.netWorldState.Value.TreasureTotemsUsed * 777);
@@ -915,7 +946,7 @@ public class Collector {
             Log.Error($"\nException in CollectArtifactSpot.\nError message:\n{e.Message}");
         }
     }
-    
+
     public void TryCollectRareObject(Vector2 tile, Farmer farmer, Random r = null!) {
         try {
             if (r == null) {

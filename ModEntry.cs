@@ -4,6 +4,9 @@ using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
+using StardewValley.Locations;
+using static System.Net.Mime.MediaTypeNames;
+using xTile;
 using SObject = StardewValley.Object;
 
 namespace Collector;
@@ -51,6 +54,14 @@ internal class ModEntry : Mod {
                     Log.Info($"\n{e.Location.NameOrUniqueName} added to Collector Locations.\n", Config.InformationalLogging);
                     return;
                 }
+            }
+
+            if (pair.Value.QualifiedItemId == ItemRegistry.GetDataOrErrorItem("(O)430").QualifiedItemId) {
+                DelayedAction action = new DelayedAction(500);
+                action.behavior = () => {
+                    Collector.DoCollection(e.Location);
+                };
+                Game1.delayedActions.Add(action);
             }
         }
         // when removing an object from a location, if it's a Collector check if there are any other Collectors in the location
@@ -178,7 +189,7 @@ internal class ModEntry : Mod {
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e) {
         if (!Helper.ModRegistry.IsLoaded("rokugin.collectorcp")) {
-            Log.Warn("\nCP component missing, please check your installation. Mod will only function if cheats are enabled.");
+            Log.Warn("\nCP component missing, please check your installation.\nWithout CP component, mod will only function if cheats are enabled.");
         }
 
         var api = this.Helper.ModRegistry.GetApi<IContentPatcherAPI>("Pathoschild.ContentPatcher");
@@ -198,7 +209,7 @@ internal class ModEntry : Mod {
         var cm = Helper.ModRegistry.GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
 
         if (cm is null) return;
-        
+
         cm.Register(ModManifest, () => Config = new ModConfig(), () => Helper.WriteConfig(Config));
 
         cm.AddPageLink(ModManifest, "GeneralSettings", () => I18n.GeneralSettings());
@@ -237,6 +248,9 @@ internal class ModEntry : Mod {
             () => I18n.PanningLogging(), () => I18n.PanningLogging_Desc());
 
         cm.AddPage(ModManifest, "CollectorSettings", () => I18n.CollectorSettings());
+        cm.AddBoolOption(ModManifest, () => Config.CollectAnimalProduce, v => Config.CollectAnimalProduce = v,
+            () => I18n.AnimalProduce(), () => I18n.AnimalProduce_Desc());
+
         cm.AddBoolOption(ModManifest, () => Config.CollectArtifactSpots, v => Config.CollectArtifactSpots = v,
             () => I18n.ArtifactSpots(), () => I18n.ArtifactSpots_Desc());
 
