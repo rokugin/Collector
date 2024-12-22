@@ -8,6 +8,8 @@ using StardewValley.Locations;
 using static System.Net.Mime.MediaTypeNames;
 using xTile;
 using SObject = StardewValley.Object;
+using StardewValley.Objects;
+using StardewValley.Inventories;
 
 namespace Collector;
 
@@ -134,7 +136,7 @@ internal class ModEntry : Mod {
             }
         }
     }
-
+    
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e) {
         if (Context.IsPlayerFree) {
             if (Context.IsMainPlayer && Config.AllowGlobalCollector && Keys.ActivateGlobalCollector.JustPressed()) {

@@ -979,9 +979,26 @@ public class Collector {
     }
 
     public static void ShowCollectorInventory() {
-        Game1.activeClickableMenu = new ItemGrabMenu(GetCollectorInventory(),
-                    false, true, InventoryMenu.highlightAllItems, GrabItemFromInventory, null, GrabItemFromChest, false,
-                    true, true, true, true, 1, null, -1, "rokugin.collector", allowExitWithHeldItem: true);
+        Game1.activeClickableMenu = new CollectorItemGrabMenu(inventory: GetCollectorInventory(),
+                    reverseGrab: false,
+                    showReceivingMenu: true,
+                    highlightFunction: InventoryMenu.highlightAllItems,
+                    behaviorOnItemSelectFunction: GrabItemFromInventory,
+                    message: null!,
+                    behaviorOnItemGrab: GrabItemFromChest,
+                    snapToBottom: false,
+                    canBeExitedWithKey: true,
+                    playRightClickSound: true,
+                    allowRightClick: true,
+                    showOrganizeButton: true,
+                    source: 1,
+                    sourceItem: null,
+                    whichSpecialButton: -1,
+                    context: "rokugin.collector",
+                    allowExitWithHeldItem: true);
+        //Game1.activeClickableMenu = new ItemGrabMenu(GetCollectorInventory(),
+        //            false, true, InventoryMenu.highlightAllItems, GrabItemFromInventory, null, GrabItemFromChest, false,
+        //            true, true, true, true, 1, null, -1, "rokugin.collector", allowExitWithHeldItem: true);
     }
 
     public static void GrabItemFromInventory(Item item, Farmer farmer) {
