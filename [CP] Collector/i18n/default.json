@@ -1,0 +1,11 @@
+{
+  "collector.name": "Collector",
+  "collector.desc": "Collects various items from the location it's placed in.",
+  "first-quest.name": "Designing A Prototype",
+  "first-quest.text": "Here are the materials I need, no rush, and thanks again!",
+  "first-quest-objective-iridium-bars": "Deliver 20 Iridium Bar's to Maru",
+  "first-quest-objective-battery-packs": "Deliver 4 Battery Pack's to Maru",
+  "first-quest-objective-diamonds": "Deliver 2 Diamond's to Maru",
+  "first-quest-maru-start-mail": "Hey @,^^I've been tinkering with one of those Auto-Grabbers that Marnie got in stock and I had an idea for a new invention. Come by when you have a chance and I can tell you more about it!  ^   -Maru[#]Maru's Prototype",
+  "first-quest-maru-end-mail": "Great news, @!^^With all the extra materials you brought me, I was able to finish up the prototype. Come by and I'll show you how it works and how to build it yourself.  ^   -Maru[#]Prototype Finished"
+}

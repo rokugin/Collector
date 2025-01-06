@@ -317,10 +317,6 @@ internal class ModEntry : Mod {
                 return new[] { "false" };
             }
         });
-        
-        api?.RegisterToken(ModManifest, "Collector", () => { return new[] { I18n.Collector() }; });
-
-        api?.RegisterToken(ModManifest, "CollectorDesc", () => { return new[] { I18n.Collector_Desc() }; });
     }
 
 }

@@ -5,6 +5,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<EnableHarmony>true</EnableHarmony>
+		<LangVersion>12.0</LangVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -22,10 +23,12 @@
 		<ContentPacks Include="[CP] Collector" Version="$(Version)" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="[CP] Collector\i18n\" />
+	</ItemGroup>
+
 	<ProjectExtensions>
-		<VisualStudio>
-			<UserProperties manifest_1json__JsonSchema="" />
-		</VisualStudio>
+		<VisualStudio><UserProperties _x005B_cp_x005D__x0020_collector_4content_1json__JsonSchema="" manifest_1json__JsonSchema="" /></VisualStudio>
 	</ProjectExtensions>
 
 </Project>
