@@ -64,5 +64,6 @@
   "grabber-recipes": "Enable Grabber Recipes",
   "grabber-recipes.desc": "Recipes to convert from Auto-Grabber to Collector and back again.\nDefault: false",
   "general-settings": "General Settings",
-  "collector": "Collector"
+  "collector": "Collector",
+  "collector.desc": "Collects various items from the location it's placed in."
 }

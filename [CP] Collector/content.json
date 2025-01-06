@@ -15,8 +15,8 @@
       "Entries": {
         "{{ModId}}_Collector": {
           "Name": "{{ModId}}_Collector",
-          "DisplayName": "Collector",
-          "Description": "Collects various items from the location its placed in.",
+          "DisplayName": "{{rokugin.collector/Collector}}",
+          "Description": "{{rokugin.collector/CollectorDesc}}",
           "Price": 0,
           "Fragility": 0,
           "CanBePlacedOutdoors": true,
@@ -31,7 +31,7 @@
       "LogName": "Add Collector crafting recipe",
       "Action": "EditData",
       "Target": "Data/CraftingRecipes",
-      "Entries": {
+      "Entries": {//Iridium Bar x10, Battery Pack x2, Diamond x1
         "{{ModId}}_CollectorRecipe": "(O)337 10 (O)787 2 (O)72 1/Field/{{ModId}}_Collector 1/true/null/{{rokugin.collector/Collector}}"
       }
     },
@@ -43,6 +43,80 @@
       "Entries": {
         "{{ModId}}_CollectorConversionRecipe": "(BC)165 1/Field/{{ModId}}_Collector 1/true/default/{{rokugin.collector/Collector}}",
         "{{ModId}}_GrabberConversionRecipe": "(BC){{ModId}}_Collector 1/Field/165 1/true/default/[LocalizedText Strings\\BigCraftables:AutoGrabber_Name]"
+      }
+    },
+    {
+      "LogName": "Add Collector quest text",
+      "Action": "EditData",
+      "Target": "Strings/SpecialOrderStrings",
+      "Entries": {
+        "{{ModId}}_Maru_0_Name": "Designing The Collector",
+        "{{ModId}}_Maru_0_Text": "Here are the materials I need, no rush, and thanks again!",
+        "{{ModId}}_Maru_Objective_0_Text": "Deliver 20 Iridium Bar's to Maru",
+        "{{ModId}}_Maru_Objective_1_Text": "Deliver 4 Battery Pack's to Maru",
+        "{{ModId}}_Maru_Objective_2_Text": "Deliver 2 Diamond's to Maru"
+      }
+    },
+    {
+      "LogName": "Add Collector quest",
+      "Action": "EditData",
+      "Target": "Data/SpecialOrders",
+      "Entries": {
+        "{{ModId}}_Maru_0": {
+          "Name": "[{{ModId}}_Maru_0_Name]",
+          "Requester": "Maru",
+          "Duration": "ThreeDays",
+          "Repeatable": false,
+          "RequiredTags": "NOT_IMPLEMENTED",
+          "Text": "[{{ModId}}_Maru_0_Text]",
+          "Objectives": [
+            {
+              "Type": "Deliver",
+              "Text": "[{{ModId}}_Maru_Objective_0_Text]",
+              "RequiredCount": 20,
+              "Data": {
+                "AcceptedContextTag": "item_iridium_bar",
+                "TargetName": "Maru"
+              }
+            },
+            {
+              "Type": "Deliver",
+              "Text": "[{{ModId}}_Maru_Objective_1_Text]",
+              "RequiredCount": 4,
+              "Data": {
+                "AcceptedContextTag": "item_battery_pack",
+                "TargetName": "Maru"
+              }
+            },
+            {
+              "Type": "Deliver",
+              "Text": "[{{ModId}}_Maru_Objective_2_Text]",
+              "RequiredCount": 2,
+              "Data": {
+                "AcceptedContextTag": "item_diamond",
+                "TargetName": "Maru"
+              }
+            }
+          ],
+          "Rewards": [
+            //{
+            //  "Type": "Money",
+            //  "Data": {
+            //    "Amount": "20000"
+            //  }
+            //},
+            {
+              "Type": "Friendship",
+              "Data": {}
+            },
+            {
+              "Type": "Mail",
+              "Data": {
+                "MailReceived": "{{ModId}}_CollectorDesign"
+              }
+            }
+          ]
+        }
       }
     }
   ]

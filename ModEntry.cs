@@ -4,12 +4,8 @@ using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
-using StardewValley.Locations;
-using static System.Net.Mime.MediaTypeNames;
-using xTile;
+using StardewValley.SpecialOrders;
 using SObject = StardewValley.Object;
-using StardewValley.Objects;
-using StardewValley.Inventories;
 
 namespace Collector;
 
@@ -38,6 +34,15 @@ internal class ModEntry : Mod {
         // patch to allow right clicking Collector to open inventory
         harmony.Patch(original: AccessTools.Method(typeof(SObject), nameof(SObject.checkForAction)),
             prefix: new HarmonyMethod(typeof(ObjectPatch), nameof(ObjectPatch.CheckForAction_Prefix)));
+        // patch to remove special order timer in quest log
+        harmony.Patch(original: AccessTools.Method(typeof(SpecialOrder), nameof(SpecialOrder.IsTimedQuest)),
+            postfix: new HarmonyMethod(typeof(SpecialOrderPatch), nameof(SpecialOrderPatch.IsTimedQuest_Postfix)));
+        // patch to make special order time never decrease
+        harmony.Patch(original: AccessTools.Method(typeof(SpecialOrder), nameof(SpecialOrder.GetDaysLeft)),
+            postfix: new HarmonyMethod(typeof(SpecialOrderPatch), nameof(SpecialOrderPatch.GetDaysLeft_Postfix)));
+        // patch to keep special order from rewarding prize tickets
+        harmony.Patch(original: AccessTools.Method(typeof(SpecialOrder), nameof(SpecialOrder.Update)),
+            postfix: new HarmonyMethod(typeof(SpecialOrderPatch), nameof(SpecialOrderPatch.Update_Postfix)));
     }
 
     private void OnObjectListChanged(object? sender, ObjectListChangedEventArgs e) {
@@ -194,19 +199,7 @@ internal class ModEntry : Mod {
             Log.Warn("\nCP component missing, please check your installation.\nWithout CP component, mod will only function if cheats are enabled.");
         }
 
-        var api = this.Helper.ModRegistry.GetApi<IContentPatcherAPI>("Pathoschild.ContentPatcher");
-
-        api?.RegisterToken(ModManifest, "GrabberRecipes", () => {
-            if (Config.GrabberRecipes) {
-                return new[] { "true" };
-            } else {
-                return new[] { "false" };
-            }
-        });
-
-        api?.RegisterToken(ModManifest, "Collector", () => {
-            return new[] { I18n.Collector() };
-        });
+        RegisterContentPatcherTokens();
 
         var cm = Helper.ModRegistry.GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
 
@@ -312,6 +305,22 @@ internal class ModEntry : Mod {
 
         cm.AddBoolOption(ModManifest, () => Config.CollectTreeForage, v => Config.CollectTreeForage = v,
             () => I18n.TreeForage(), () => I18n.TreeForage_Desc());
+    }
+
+    void RegisterContentPatcherTokens() {
+        var api = this.Helper.ModRegistry.GetApi<IContentPatcherAPI>("Pathoschild.ContentPatcher");
+
+        api?.RegisterToken(ModManifest, "GrabberRecipes", () => {
+            if (Config.GrabberRecipes) {
+                return new[] { "true" };
+            } else {
+                return new[] { "false" };
+            }
+        });
+        
+        api?.RegisterToken(ModManifest, "Collector", () => { return new[] { I18n.Collector() }; });
+
+        api?.RegisterToken(ModManifest, "CollectorDesc", () => { return new[] { I18n.Collector_Desc() }; });
     }
 
 }

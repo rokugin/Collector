@@ -927,7 +927,7 @@ public class Collector {
                         Log.Error($"Location '{location.NameOrUniqueName}' failed parsing item query '{query}' for artifact spot '{drop.Id}': {error}");
                     });
 
-                if (item == null) {
+                if (item == null || (Game1.netWorldState.Value.LostBooksFound >= 21 && item.QualifiedItemId == "(O)102")) {
                     continue;
                 }
 
@@ -996,9 +996,6 @@ public class Collector {
                     whichSpecialButton: -1,
                     context: "rokugin.collector",
                     allowExitWithHeldItem: true);
-        //Game1.activeClickableMenu = new ItemGrabMenu(GetCollectorInventory(),
-        //            false, true, InventoryMenu.highlightAllItems, GrabItemFromInventory, null, GrabItemFromChest, false,
-        //            true, true, true, true, 1, null, -1, "rokugin.collector", allowExitWithHeldItem: true);
     }
 
     public static void GrabItemFromInventory(Item item, Farmer farmer) {
