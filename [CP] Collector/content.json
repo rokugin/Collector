@@ -21,7 +21,6 @@
           "Fragility": 0,
           "CanBePlacedOutdoors": true,
           "CanBePlacedIndoors": true,
-          "IsLamp": false,
           "Texture": "{{ModId}}_Texture",
           "SpriteIndex": 0
         }
@@ -31,7 +30,7 @@
       "LogName": "Add Collector crafting recipe",
       "Action": "EditData",
       "Target": "Data/CraftingRecipes",
-      "Entries": {//Iridium Bar x10, Battery Pack x2, Diamond x1
+      "Entries": { //Iridium Bar x10, Battery Pack x2, Diamond x1
         "{{ModId}}_CollectorRecipe": "(O)337 10 (O)787 2 (O)72 1/Field/{{ModId}}_Collector 1/true/null/{{i18n: collector.name}}"
       }
     },
@@ -66,6 +65,11 @@
           "Condition": "PLAYER_HAS_MAIL Any marnieAutoGrabber Any"
         }
       }
+    },
+    {
+      "LogName": "Include events",
+      "Action": "Include",
+      "FromFile": "assets/events.json"
     },
     {
       "LogName": "Add Collector quest text",
