@@ -9,6 +9,29 @@
       "FromFile": "assets/Collector.png"
     },
     {
+      "LogName": "Load drone texture",
+      "Action": "Load",
+      "Target": "Characters/{{ModId}}_FakeDrone, Portraits/{{ModId}}_FakeDrone",
+      "FromFile": "assets/{{TargetPathOnly}}/Drone.png"
+    },
+    {
+      "LogName": "Add fake character for drone",
+      "Action": "EditData",
+      "Target": "Data/Characters",
+      "Entries": {
+        "{{ModId}}_FakeDrone": {
+          "DisplayName": "Drone",
+          "CanSocialize": false,
+          "CanGreetNearbyCharacters": false,
+          "Breather": false,
+          "Calendar": "HiddenAlways",
+          "SocialTab": "HiddenAlways",
+          "EndSlideShow": "TrailingGroup",
+          "UnlockConditions": "false"
+        }
+      }
+    },
+    {
       "LogName": "Add Collector to big craftables data",
       "Action": "EditData",
       "Target": "Data/BigCraftables",
