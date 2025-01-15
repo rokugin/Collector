@@ -18,11 +18,11 @@
 		<PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.3.2" />
 		<PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.2.0" />
 	</ItemGroup>
-<!--
+
 	<ItemGroup>
 		<ContentPacks Include="[CP] Collector" Version="$(Version)" />
 	</ItemGroup>
--->
+
 	<ProjectExtensions>
 		<VisualStudio>
 			<UserProperties _x005B_cp_x005D__x0020_collector_4content_1json__JsonSchema="" manifest_1json__JsonSchema="" />

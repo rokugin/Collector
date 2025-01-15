@@ -1,51 +1,105 @@
-{// directions: 0 up, 1 right, 2 down, 3 left
-  "Changes": [
+{//TAS textureName sourceX sourceY sourceWidth sourceHeight frameInterval numFrames numLoops tileX tileY flicker flip drawDepth fade scale scaleChange rotation rotationChange
+  "$schema": "https://smapi.io/schemas/content-patcher.json",
+  "Changes": [//directions: 0 up, 1 right, 2 down, 3 left 
+    {
+      "LogName": "Add Collector events to Farm",
+      "Action": "EditData",
+      "Target": "Data/Events/Farm",
+      "Entries": {
+        "{{ModId}}_FirstQuestMaruStartMarriedFarm/!SawEvent {{ModId}}_FirstQuestMaruStart/Spouse Maru/HostOrLocalMail {{ModId}}_CollectorDesignStartFlag": "
+        continue/-10000 -10000/Maru -100 -100 2 farmer -100 -100 2/broadcastEvent false/addSpecialOrder {{ModId}}_Maru_0/eventSeen {{ModId}}_FirstQuestMaruStart true/skippable/
+        warp farmer -100 -100/faceDirection Maru 2/warp Maru -100 -100/warp Maru 65 15/positionOffset Maru 0 -20/
+        globalFadeToClear 0.02 true/viewport 64 15 clamp true/pause 1000/playSound doorClose/emote Maru 16 true/warp farmer 64 15/faceDirection Maru 3/pause 500/
+        pause 300/faceDirection farmer 1/pause 300/
+        speak Maru \"{{i18n: first-quest-maru-start-married-farm-event.0}}\"/pause 300/
+        emote farmer 32/pause 300/
+        speak Maru \"{{i18n: first-quest-maru-start-married-farm-event.1}}\"/pause 300/move farmer 0 2 1 true/move Maru 0 2 1 true/globalFade 0.02/viewport -10000 -10000/pause 300/
+        changeLocation ScienceHouse/switchEvent {{ModId}}_FirstQuestMaruStartMarried",
+        "{{ModId}}_FirstQuestMaruEndMarriedFarm/!SawEvent {{ModId}}_FirstQuestMaruEnd/Spouse Maru/HostOrLocalMail {{ModId}}_CollectorDesignEndFlag": "
+        continue/-10000 -10000/Maru -100 -100 2 farmer -100 -100 2/broadcastEvent false/eventSeen {{ModId}}_FirstQuestMaruEnd true/setSkipActions AddItem (BC){{ModId}}_Collector#MarkCraftingRecipeKnown All {{ModId}}_CollectorRecipe/skippable/warp farmer -100 -100/faceDirection Maru 2/warp Maru -100 -100/warp Maru 65 15/positionOffset Maru 0 -20/
+        globalFadeToClear 0.02 true/viewport 64 15 clamp true/pause 1000/playSound doorClose/emote Maru 16 true/warp farmer 64 15/faceDirection Maru 3/pause 500/
+        pause 300/faceDirection farmer 1/pause 300/
+        speak Maru \"{{i18n: first-quest-maru-end-married-farm-event.0}}\"/pause 300/
+        emote farmer 32/pause 300/
+        speak Maru \"{{i18n: first-quest-maru-end-married-farm-event.1}}\"/pause 300/move farmer 0 2 1 true/move Maru 0 2 1 true/globalFade 0.02/viewport -10000 -10000/pause 300/
+        changeLocation ScienceHouse/switchEvent {{ModId}}_FirstQuestMaruEndMarried"
+      }
+    },
     {
       "LogName": "Add Collector events",
       "Action": "EditData",
       "Target": "Data/Events/ScienceHouse",
-      "Entries": { // Replace Auto-Grabber behind Maru with partially disassembled one, Write marriage lines, Add event transfer from farm when married to Maru
-        "{{ModId}}_FirstQuestMaruStart/!Spouse Maru/NPCVisibleHere Maru/HostOrLocalMail {{ModId}}_CollectorDesignStart": "
-        CloudCountry/7 6/Maru 9 6 0 farmer 12 19 0/broadcastEvent true/addSpecialOrder {{ModId}}_Maru_0/addBigProp 9 5 165/skippable/pause 1000/
+      "Entries": {
+        "{{ModId}}_FirstQuestMaruStart/!SawEvent {{ModId}}_FirstQuestMaruStartMarriedFarm/!Spouse Maru/NPCVisibleHere Maru/HostOrLocalMail {{ModId}}_CollectorDesignStartLetter": "
+        CloudCountry/-10000 -10000/Maru -100 -100 0 farmer -100 -100 0/broadcastEvent true/addSpecialOrder {{ModId}}_Maru_0/eventSeen {{ModId}}_FirstQuestMaruStartMarriedFarm true/temporaryAnimatedSprite {{ModId}}_Texture 0 32 16 32 100 1 0 9 4 false false 1 0 1 0 0 0 hold_last_frame/skippable/warp Maru 9 6/warp farmer 12 19/
+        globalFadeToClear 0.02 true/viewport 7 6 clamp true/pause 500
         beginSimultaneousCommand/playSound crafting/shake Maru 500/emote Maru 8 true/move farmer 0 -7 3/endSimultaneousCommand/
         beginSimultaneousCommand/playSound potterySmash/shake Maru 500/emote Maru 12 true/move farmer -5 0 0/endSimultaneousCommand/
         move farmer 0 -1 0/doAction 7 10/emote Maru 16 true/faceDirection Maru 2 true/pause 500/
-        move farmer 0 -3 0/beginSimultaneousCommand/textAboveHead Maru \"Oh, hey!\"/faceDirection Maru 3 true/move farmer 0 -2 1/endSimultaneousCommand/pause 300/
-        speak Maru \"@, I'm glad you decided to stop by today.$1#$b#My latest gadget is a little ambitious, but I think you'll find it particularly useful.#$b#I've run into a bit of a problem, but let me show you what I've got so far.\"/pause 300/
+        move farmer 0 -3 0/beginSimultaneousCommand/textAboveHead Maru \"{{i18n: first-quest-start-event.0}}\"/faceDirection Maru 3 true/move farmer 0 -2 1/endSimultaneousCommand/pause 300/
+        speak Maru \"{{i18n: first-quest-start-event.1}}\"/pause 300/
         playSound axe/temporaryAnimatedSprite {{ModId}}_Texture 16 0 16 32 100 1 0 8 5 false false 65 0 1 0 0 0 hold_last_frame/pause 300/
-        speak Maru \"I disassembled the Auto-Grabber I got from Marnie and constructed this with some of the parts.#$b#Marnie called it a luxury item, but it's pretty poorly made and some of the parts broke while I was taking it apart.$5#$b#I'll need some more materials to repair the prototype, but let me explain the premise of my invention a bit more.\"/pause 300/
-        playSound pickUpItem/playSound coin/removeSprite 8 5/pause 500/faceDirection Maru 2 true/playSound axe/temporaryAnimatedSprite {{ModId}}_Texture 16 0 16 32 100 1 0 9 6 false false 7 0 1 0 0 0 hold_last_frame/pause 500/speak Maru \"When complete, this device should act as a localized hub for a semi-autonomous machine.#$b#The base model should be capable of locating, collecting, and stockpiling various materials from the immediate area.$1\"/
-        move Maru -1 0 3/pause 300/
-        speak Maru \"Here, I wrote down everything I need.#$b#It's a lot, so there's no rush!$1\"/pause 300/
-        pause 500/end",
-        "{{ModId}}_FirstQuestMaruEnd/!Spouse Maru/NPCVisibleHere Maru/HostOrLocalMail {{ModId}}_CollectorDesignEnd": "
-        CloudCountry/7 6/Maru 8 6 3 farmer 12 19 0/broadcastEvent true/temporaryAnimatedSprite {{ModId}}_Texture 0 0 16 32 100 1 0 7 5 false false 1 0 1 0 0 0 hold_last_frame/addTemporaryActor {{ModId}}_FakeDrone 16 32 7 5 0 false/ignoreCollisions {{ModId}}_FakeDrone/positionOffset {{ModId}}_FakeDrone 0 -16/setSkipActions AddItem (BC){{ModId}}_Collector#MarkCraftingRecipeKnown All {{ModId}}_CollectorRecipe/skippable/pause 1000/
+        speak Maru \"{{i18n: first-quest-start-event.2}}\"/pause 300/
+        playSound pickUpItem/playSound coin/removeSprite 8 5/pause 500/faceDirection Maru 2 true/playSound axe/temporaryAnimatedSprite {{ModId}}_Texture 16 0 16 32 100 1 0 9 6 false false 7 0 1 0 0 0 hold_last_frame/pause 500/
+        speak Maru \"{{i18n: first-quest-start-event.3}}\"/move Maru -1 0 3/pause 300/
+        speak Maru \"{{i18n: first-quest-start-event.4}}\"/pause 300/
+        message \"{{i18n: first-quest-start-event.5}}\"/
+        globalFade 0.02/viewport -10000 -10000/pause 500/end",
+        "{{ModId}}_FirstQuestMaruStartMarried": "
+        playMusic CloudCountry/faceDirection farmer 0/warp farmer -100 -100/faceDirection Maru 3/warp Maru 2 6/temporaryAnimatedSprite {{ModId}}_Texture 0 32 16 32 100 1 0 9 4 false false 1 0 1 0 0 0 hold_last_frame/
+        globalFadeToClear 0.02 true/viewport 7 6 clamp true/pause 500/warp farmer 3 8/playSound doorClose/pause 300/
+        speak Maru \"{{i18n: first-quest-maru-start-married-event.0}}\"/pause 300/
+        warp Maru -100 -100/playSound stairsdown/pause 1000/playSound Ship/pause 1000/playSound leafrustle/pause 1000/playSound Ship/pause 1000/playSound pickUpItem/pause 1000/playSound stairsdown/faceDirection Maru 1/warp Maru 2 6/pause 1000/
+        playSound axe/temporaryAnimatedSprite {{ModId}}_Texture 16 0 16 32 100 1 0 3 5 false false 1 0 1 0 0 0 hold_last_frame/pause 300/
+        speak Maru \"{{i18n: first-quest-maru-start-married-event.1}}\"/pause 300/move Maru 0 1 1/move Maru 1 0 2/pause 300/
+        speak Maru \"{{i18n: first-quest-maru-start-married-event.2}}\"/pause 300/
+        message \"{{i18n: first-quest-maru-start-married-event.3}}\"/
+        globalFade 0.02/viewport -10000 -10000/pause 500/end",
+        "{{ModId}}_FirstQuestMaruEnd/!SawEvent {{ModId}}_FirstQuestMaruEndMarriedFarm/!Spouse Maru/NPCVisibleHere Maru/HostOrLocalMail {{ModId}}_CollectorDesignEndLetter": "
+        CloudCountry/-10000 -10000/Maru -100 -100 3 farmer -100 -100 0/broadcastEvent true/eventSeen {{ModId}}_FirstQuestMaruEndMarriedFarm/temporaryAnimatedSprite {{ModId}}_Texture 0 0 16 32 100 1 0 7 5 false false 1 0 1 0 0 0 hold_last_frame/addTemporaryActor {{ModId}}_FakeDrone 16 32 7 5 0 false/ignoreCollisions {{ModId}}_FakeDrone/positionOffset {{ModId}}_FakeDrone 0 -16/setSkipActions AddItem (BC){{ModId}}_Collector#MarkCraftingRecipeKnown All {{ModId}}_CollectorRecipe/skippable/warp Maru 8 6/warp farmer 12 19/
+        globalFadeToClear 0.02 true/viewport 7 6 clamp true/pause 500
         beginSimultaneousCommand/playSound Ship/shake Maru 500/move farmer 0 -4 0/endSimultaneousCommand/beginSimultaneousCommand/playSound openBox/shake Maru 500/move farmer 0 -3 3/endSimultaneousCommand/
         beginSimultaneousCommand/playSound crafting/shake Maru 500/emote Maru 32 true/move farmer -5 0 0/endSimultaneousCommand/
         move farmer 0 -1 0/doAction 7 10/emote Maru 16 true/faceDirection Maru 2/pause 500/move farmer 0 -3 0/pause 300/
-        speak Maru \"Hey @, good timing!$1#$b#I just put the finishing touches on the prototype Collector.\"/pause 300/
-        move Maru 0 1 3/move Maru -1 0 2/pause 300/speak Maru \"I already did some functionality tests, but I can set up a demonstration if you'd like.\"/pause 300/
-        quickQuestion Do you want Maru to demonstrate the machine?#Sure#No thanks(break)switchEvent {{ModId}}_FirstQuestMaruEndDemonstration(break)pause 300/
-        speak Maru \"Well, I'm sure you'll have plenty of time to see it in action.#$b#With the materials you brought me and what I had before, I was able to make an extra Collector. You should take it!$1\"/pause 300/addItem (BC){{ModId}}_Collector/setSkipActions MarkCraftingRecipeKnown All {{ModId}}_CollectorRecipe/speak Maru \"And here's the blueprints. This was a lot of fun, thanks for helping me with this, @.$1\"/pause 300/
-        addCraftingRecipe {{ModId}}_CollectorRecipe/message \"Learned how to craft 'Collector'\"/
-        pause 500/end
-        ", // Make drone move up 1 tile, replace with TAS, move left 4 tiles, down 2 tiles, loot the Quartz, move up 2 tiles, right 4 tiles, replace with drone actor, move down 2 tiles
-        // Replace Collector TAS with top opening TAS
-        "{{ModId}}_FirstQuestMaruEndDemonstration": "
-        pause 300/speak Maru \"Great! You stand here in front of the machine and activate it when I tell you to.$1\"/pause 300/
-        move Maru -1 0 3/advancedMove Maru false -4 0 0 -1 1 300/move farmer 0 -1 3/proceedPosition Maru/
-        playSound woodyStep/addObject 3 6 80/pause 300/
-        textAboveHead Maru \"Okay, go for it.\"/pause 500/faceDirection farmer 0/playSound openBox/startJittering/pause 300/stopJittering/
-        faceDirection {{ModId}}_FakeDrone 3/ignoreCollisions {{ModId}}_FakeDrone/advancedMove {{ModId}}_FakeDrone false 0 -1 -4 0 0 2 2 500/pause 500/faceDirection farmer 3/proceedPosition {{ModId}}_FakeDrone/removeObject 3 6/playSound pickUpItem/playSound coin/pause 500/
-        advancedMove {{ModId}}_FakeDrone false 0 -2 4 0 0 1 2 500/advancedMove Maru false 0 1 4 0 1 300/pause 500/faceDirection farmer 0/proceedPosition {{ModId}}_FakeDrone/playSound Ship/pause 500/
+        speak Maru \"{{i18n: first-quest-end-event.0}}\"/pause 300/
+        advancedMove Maru false 0 1 -1 0 2 300/proceedPosition Maru/
+        speak Maru \"{{i18n: first-quest-end-event.1}}\"/pause 300/
+        emote farmer 32/pause 300/
+        speak Maru \"{{i18n: first-quest-end-event.2}}\"/pause 300/
+        advancedMove Maru false -4 0 0 -1 1 300/pause 300/advancedMove farmer false 0 -1 3 300/proceedPosition Maru/pause 500/
+        playSound woodyStep/addObject 4 6 80/pause 500/
+        textAboveHead Maru \"{{i18n: first-quest-end-event.3}}\"/pause 1000/faceDirection farmer 0/playSound openBox/startJittering/pause 300/stopJittering/
+        faceDirection {{ModId}}_FakeDrone 3/ignoreCollisions {{ModId}}_FakeDrone/advancedMove {{ModId}}_FakeDrone false 0 -1 -3 0 0 2 2 500/hideShadow {{ModId}}_FakeDrone true/pause 500/faceDirection farmer 3/proceedPosition {{ModId}}_FakeDrone/shake {{ModId}}_FakeDrone 500/removeObject 4 6/playSound pickUpItem/playSound coin/pause 700/
+        advancedMove {{ModId}}_FakeDrone false 0 -2 3 0 0 1 2 500/advancedMove Maru false 0 1 3 0 1 300/pause 500/faceDirection farmer 0/temporaryAnimatedSprite {{ModId}}_Texture 32 0 16 32 100 4 0 7 5 false false 2 0 1 0 0 0 hold_last_frame/proceedPosition {{ModId}}_FakeDrone/pause 300/shake {{ModId}}_FakeDrone 500/playSound Ship/pause 500/
         faceDirection farmer 3/proceedPosition Maru/pause 300/
-        speak Maru \"Now all you have to do is check the storage compartment and you can retrieve the items that have been collected!$1\"/pause 300/
+        speak Maru \"{{i18n: first-quest-end-event.4}}\"/pause 300/
         faceDirection farmer 0/playSound openChest/pause 300/itemAboveHead (O)80/null/pause 1000/
-        faceDirection farmer 3/playSound give_gift/startJittering/pause 300/stopJittering/message \"You hand the Quartz back to Maru\"/pause 300/
-        speak Maru \"Thanks.#$b#Well, that's basically it, the drone will collect items from the immediate area and place them in the Collector.#$b#The prototype drone is set to 'Demo Mode', so it moves a lot slower than the real thing.#$b#With the materials you brought me and what I had before, I was able to make an extra Collector. You should take it!$1\"/pause 300/addItem (BC){{ModId}}_Collector/setSkipActions MarkCraftingRecipeKnown All {{ModId}}_CollectorRecipe/speak Maru \"And here's the blueprints. This was a lot of fun, thanks for helping me with this, @.$1\"/pause 300/
-        addCraftingRecipe {{ModId}}_CollectorRecipe/message \"Learned how to craft 'Collector'\"/
-        pause 500/end
-        "
+        faceDirection farmer 3/playSound give_gift/startJittering/pause 300/stopJittering/
+        message \"{{i18n: first-quest-end-event.5}}\"/pause 300/
+        speak Maru \"{{i18n: first-quest-end-event.6}}\"/pause 300/addItem (BC){{ModId}}_Collector/setSkipActions MarkCraftingRecipeKnown All {{ModId}}_CollectorRecipe/
+        speak Maru \"{{i18n: first-quest-end-event.7}}\"/pause 300/
+        addCraftingRecipe {{ModId}}_CollectorRecipe/
+        message \"{{i18n: first-quest-end-event.8}}\"/
+        globalFade/viewport -10000 -10000/pause 500/end",
+        "{{ModId}}_FirstQuestMaruEndMarried": "
+        playMusic CloudCountry/faceDirection farmer 0/warp farmer -100 -100/faceDirection Maru 1/warp Maru 3 6/temporaryAnimatedSprite {{ModId}}_Texture 0 0 16 32 100 1 0 7 5 false false 1 0 1 0 0 0 hold_last_frame/addTemporaryActor {{ModId}}_FakeDrone 16 32 7 5 0 false/ignoreCollisions {{ModId}}_FakeDrone/positionOffset {{ModId}}_FakeDrone 0 -16/
+        globalFadeToClear 0.02 true/viewport 7 6 clamp true/pause 500/warp farmer 3 8/playSound doorClose/pause 300/
+        pause 300/speak Maru \"{{i18n: first-quest-maru-end-married-event.0}}\"/pause 300/
+        move farmer 0 -1 1/move farmer 4 0 3/pause 300/
+        playSound woodyStep/addObject 4 6 80/pause 500/
+        textAboveHead Maru \"{{i18n: first-quest-maru-end-married-event.1}}\"/pause 1000/faceDirection farmer 0/playSound openBox/startJittering/pause 300/stopJittering/
+        faceDirection {{ModId}}_FakeDrone 3/ignoreCollisions {{ModId}}_FakeDrone/advancedMove {{ModId}}_FakeDrone false 0 -1 -3 0 0 2 2 500/hideShadow {{ModId}}_FakeDrone true/pause 500/faceDirection farmer 3/proceedPosition {{ModId}}_FakeDrone/shake {{ModId}}_FakeDrone 500/removeObject 4 6/playSound pickUpItem/playSound coin/pause 700/
+        advancedMove {{ModId}}_FakeDrone false 0 -2 3 0 0 1 2 500/advancedMove Maru false 0 1 3 0 1 300/pause 500/faceDirection farmer 0/temporaryAnimatedSprite {{ModId}}_Texture 32 0 16 32 100 4 0 7 5 false false 2 0 1 0 0 0 hold_last_frame/proceedPosition {{ModId}}_FakeDrone/pause 300/shake {{ModId}}_FakeDrone 500/playSound Ship/pause 500/
+        faceDirection farmer 3/proceedPosition Maru/pause 300/
+        speak Maru \"{{i18n: first-quest-maru-end-married-event.2}}\"/pause 300/
+        faceDirection farmer 0/playSound openChest/pause 300/itemAboveHead (O)80/null/pause 1000/
+        faceDirection farmer 3/playSound give_gift/startJittering/pause 300/stopJittering/
+        message \"{{i18n: first-quest-maru-end-married-event.3}}\"/pause 300/
+        speak Maru \"{{i18n: first-quest-maru-end-married-event.4}}\"/pause 300/addItem (BC){{ModId}}_Collector/setSkipActions MarkCraftingRecipeKnown All {{ModId}}_CollectorRecipe/
+        speak Maru \"{{i18n: first-quest-maru-end-married-event.5}}\"/pause 300/
+        addCraftingRecipe {{ModId}}_CollectorRecipe/
+        message \"{{i18n: first-quest-maru-end-married-event.6}}\"/
+        globalFade/viewport -10000 -10000/pause 500/end"
       }
     }
   ]

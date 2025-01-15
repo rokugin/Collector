@@ -53,7 +53,7 @@
       "LogName": "Add Collector crafting recipe",
       "Action": "EditData",
       "Target": "Data/CraftingRecipes",
-      "Entries": { //Iridium Bar x10, Battery Pack x2, Diamond x1
+      "Entries": {//Iridium Bar x10, Battery Pack x2, Diamond x1
         "{{ModId}}_CollectorRecipe": "(O)337 10 (O)787 2 (O)72 1/Field/{{ModId}}_Collector 1/true/null/{{i18n: collector.name}}"
       }
     },
@@ -72,8 +72,8 @@
       "Action": "EditData",
       "Target": "Data/mail",
       "Entries": {
-        "{{ModId}}_CollectorDesignStart": "{{i18n: first-quest-maru-start-mail}}",
-        "{{ModId}}_CollectorDesignEnd": "{{i18n: first-quest-maru-end-mail}}"
+        "{{ModId}}_CollectorDesignStartLetter": "{{i18n: first-quest-maru-start-mail.0}}[#]{{i18n: first-quest-maru-start-mail.1}}",
+        "{{ModId}}_CollectorDesignEndLetter": "{{i18n: first-quest-maru-end-mail.0}}[#]{{i18n: first-quest-maru-end-mail.1}}"
       }
     },
     {
@@ -81,11 +81,29 @@
       "Action": "EditData",
       "Target": "Data/TriggerActions",
       "Entries": {
-        "{{ModId}}_CollectorDesignMail": {
-          "Id": "{{ModId}}_CollectorDesignMail",
+        "{{ModId}}_CollectorDesignStartFlag": {
+          "Id": "{{ModId}}_CollectorDesignStartFlag",
           "Trigger": "DayStarted",
-          "Actions": [ "AddMail All {{ModId}}_CollectorDesignStart now" ],
-          "Condition": "PLAYER_HAS_MAIL Any marnieAutoGrabber Any"
+          "Actions": [ "AddMail Current {{ModId}}_CollectorDesignStartFlag received" ],
+          "Condition": "PLAYER_HEARTS Any Maru 2, PLAYER_HAS_MAIL Any marnieAutoGrabber Any"
+        },
+        "{{ModId}}_CollectorDesignStartMail": {
+          "Id": "{{ModId}}_CollectorDesignStartMail",
+          "Trigger": "DayStarted",
+          "Actions": [ "AddMail Current {{ModId}}_CollectorDesignStartLetter tomorrow" ],
+          "Condition": "!PLAYER_NPC_RELATIONSHIP Any Maru Married, PLAYER_HAS_MAIL Current {{ModId}}_CollectorDesignStartFlag Any, !PLAYER_HAS_SEEN_EVENT Current {{ModId}}_FirstQuestMaruStart"
+        },
+        "{{ModId}}_CollectorDesignEndMail": {
+          "Id": "{{ModId}}_CollectorDesignEndMail",
+          "Trigger": "DayStarted",
+          "Actions": [ "AddMail Current {{ModId}}_CollectorDesignEndLetter now" ],
+          "Condition": "!PLAYER_NPC_RELATIONSHIP Any Maru Married, PLAYER_HAS_MAIL Current {{ModId}}_CollectorDesignEndFlag Any, !PLAYER_HAS_SEEN_EVENT Current {{ModId}}_FirstQuestMaruEnd"
+        },
+        "{{ModId}}_AddRecipeToLateJoiner": {
+          "Id": "{{ModId}}_AddRecipeToLateJoiner",
+          "Trigger": "DayStarted",
+          "Actions": [ "MarkCraftingRecipeKnown Current {{ModId}}_CollectorRecipe" ],
+          "Condition": "!PLAYER_HAS_CRAFTING_RECIPE Current {{ModId}}_CollectorRecipe, PLAYER_HAS_SEEN_EVENT Any {{ModId}}_FirstQuestMaruEnd"
         }
       }
     },
@@ -124,7 +142,7 @@
               "Text": "[{{ModId}}_Maru_Objective_0_Text]",
               "RequiredCount": 20,
               "Data": {
-                "AcceptedContextTag": "item_iridium_bar",
+                "AcceptedContextTags": "item_iridium_bar",
                 "TargetName": "Maru"
               }
             },
@@ -133,7 +151,7 @@
               "Text": "[{{ModId}}_Maru_Objective_1_Text]",
               "RequiredCount": 4,
               "Data": {
-                "AcceptedContextTag": "item_battery_pack",
+                "AcceptedContextTags": "item_battery_pack",
                 "TargetName": "Maru"
               }
             },
@@ -142,7 +160,7 @@
               "Text": "[{{ModId}}_Maru_Objective_2_Text]",
               "RequiredCount": 2,
               "Data": {
-                "AcceptedContextTag": "item_diamond",
+                "AcceptedContextTags": "item_diamond",
                 "TargetName": "Maru"
               }
             }
@@ -161,8 +179,7 @@
             {
               "Type": "Mail",
               "Data": {
-                "MailReceived": "{{ModId}}_CollectorDesignEnd",
-                "NoLetter": false
+                "MailReceived": "{{ModId}}_CollectorDesignEndFlag"
               }
             }
           ]
