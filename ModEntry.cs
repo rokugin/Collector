@@ -185,6 +185,8 @@ internal class ModEntry : Mod {
         }
 
         Log.Info(output, Config.InformationalLogging);
+
+        if (!Config.RunOnDayStart) return;
         // iterate list of locations and perform collection in each location
         DelayedAction action = new DelayedAction(2000);
         action.behavior = () => {
@@ -196,7 +198,7 @@ internal class ModEntry : Mod {
     }
 
     private void OnDayEnding(object? sender, DayEndingEventArgs e) {
-        if (collectorLocations.Count < 1) return;
+        if (!Config.RunOnDayEnd || collectorLocations.Count < 1) return;
 
         foreach (var location in collectorLocations) {
             Collector.DoCollection(location);
