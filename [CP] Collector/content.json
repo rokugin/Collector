@@ -1,6 +1,17 @@
 {
   "$schema": "https://smapi.io/schemas/content-patcher.json",
   "Format": "2.4.0",
+  "DynamicTokens": [
+    {
+      "Name": "RecipeAvailability",
+      "Value": "null"
+    },
+    {
+      "Name": "RecipeAvailability",
+      "Value": "default",
+      "When": { "rokugin.collector/SpecialOrders": "false" }
+    }
+  ],
   "Changes": [
     {
       "LogName": "Load Collector texture",
@@ -54,7 +65,7 @@
       "Action": "EditData",
       "Target": "Data/CraftingRecipes",
       "Entries": {//Iridium Bar x10, Battery Pack x2, Diamond x1
-        "{{ModId}}_CollectorRecipe": "(O)337 10 (O)787 2 (O)72 1/Field/{{ModId}}_Collector 1/true/null/{{i18n: collector.name}}"
+        "{{ModId}}_CollectorRecipe": "(O)337 10 (O)787 2 (O)72 1/Field/{{ModId}}_Collector 1/true/{{RecipeAvailability}}/{{i18n: collector.name}}"
       }
     },
     {
@@ -71,6 +82,7 @@
       "LogName": "Add Collector quest mail",
       "Action": "EditData",
       "Target": "Data/mail",
+      "When": {"rokugin.collector/SpecialOrders": "true"},
       "Entries": {
         "{{ModId}}_CollectorDesignStartLetter": "{{i18n: first-quest-maru-start-mail.0}}[#]{{i18n: first-quest-maru-start-mail.1}}",
         "{{ModId}}_CollectorDesignEndLetter": "{{i18n: first-quest-maru-end-mail.0}}[#]{{i18n: first-quest-maru-end-mail.1}}"
@@ -80,6 +92,7 @@
       "LogName": "Add trigger action to send Collector quest mail",
       "Action": "EditData",
       "Target": "Data/TriggerActions",
+      "When": {"rokugin.collector/SpecialOrders": "true"},
       "Entries": {
         "{{ModId}}_CollectorDesignStartFlag": {
           "Id": "{{ModId}}_CollectorDesignStartFlag",
@@ -116,6 +129,7 @@
       "LogName": "Add Collector quest text",
       "Action": "EditData",
       "Target": "Strings/SpecialOrderStrings",
+      "When": {"rokugin.collector/SpecialOrders": "true"},
       "Entries": {
         "{{ModId}}_Maru_0_Name": "{{i18n: first-quest.name}}",
         "{{ModId}}_Maru_0_Text": "{{i18n: first-quest.text}}",
@@ -128,6 +142,7 @@
       "LogName": "Add Collector quest",
       "Action": "EditData",
       "Target": "Data/SpecialOrders",
+      "When": {"rokugin.collector/SpecialOrders": "true"},
       "Entries": {
         "{{ModId}}_Maru_0": {
           "Name": "[{{ModId}}_Maru_0_Name]",

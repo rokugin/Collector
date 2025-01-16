@@ -10,6 +10,7 @@ internal class ModConfig {
     public ModConfigKeys Controls { get; set; } = new();
 
     public bool GrabberRecipes { get; set; } = false;
+    public bool SpecialOrders { get; set; } = true;
 
     public bool CollectAnimalProduce { get; set; } = true;
     public bool CollectCrops { get; set; } = true;

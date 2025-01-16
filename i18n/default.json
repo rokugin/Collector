@@ -63,5 +63,8 @@
   "cheats": "Cheats",
   "grabber-recipes": "Enable Grabber Recipes",
   "grabber-recipes.desc": "Recipes to convert from Auto-Grabber to Collector and back again.\nDefault: false",
-  "general-settings": "General Settings"
+  "general-settings": "General Settings",
+  "general-settings-info": "The following options require reloading a save to take effect.\nThey are best changed from the main menu.",
+  "special-orders": "Enable Special Orders",
+  "special-orders.desc": "Enables special orders and events for the Collector recipe.\nDefault: true"
 }
