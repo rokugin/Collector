@@ -7,7 +7,7 @@
   "UniqueID": "rokugin.collector",
   "EntryDll": "Collector.dll",
   "MinimumApiVersion": "4.1.0",
-  //"UpdateKeys": [ "Nexus:" ],
+  "UpdateKeys": [ "Nexus:30110" ],
   "Dependencies": [
     {
       "UniqueID": "Pathoschild.ContentPatcher",
