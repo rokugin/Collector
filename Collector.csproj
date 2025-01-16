@@ -9,6 +9,12 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Images\**" />
+	  <EmbeddedResource Remove="Images\**" />
+	  <None Remove="Images\**" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<None Remove=".gitattributes" />
 		<None Remove=".gitignore" />
 		<None Remove="LICENSE" />

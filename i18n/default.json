@@ -66,5 +66,9 @@
   "general-settings": "General Settings",
   "general-settings-info": "The following options require reloading a save to take effect.\nThey are best changed from the main menu.",
   "special-orders": "Enable Special Orders",
-  "special-orders.desc": "Enables special orders and events for the Collector recipe.\nDefault: true"
+  "special-orders.desc": "Enables special orders and events for the Collector recipe.\nDefault: true",
+  "run-day-start": "Collect After Day Start",
+  "run-day-start.desc": "Performs collection right after the day starts.\nDefault: true",
+  "run-day-end": "Collect Before Day End",
+  "run-day-end.desc": "Performs collection right before the day ends.\nDefault: true"
 }

@@ -124,7 +124,7 @@ public class Collector {
         }
         return name;
     }
-    
+
     public void DoCollection(GameLocation location) {
         string output = $"\n====={location.NameOrUniqueName}=====\n";
         itemsToCollect.Clear();
@@ -135,9 +135,7 @@ public class Collector {
             CollectForageAndSpawnedObject(obj);
             CollectArtifactAndSeedSpots(obj);
             CollectMushroomBox(obj);
-            if (location is SlimeHutch) {
-                CollectSlimeBall(obj);
-            }
+            CollectSlimeBall(obj);
             CollectCrabPot(obj);
             CollectGardenPot(obj);
         }

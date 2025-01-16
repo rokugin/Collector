@@ -222,6 +222,8 @@ internal class ModEntry : Mod {
         cm.AddPageLink(ModManifest, "Debugging", I18n.Debugging);
 
         cm.AddPage(ModManifest, "GeneralSettings", I18n.GeneralSettings);
+        cm.AddBoolOption(ModManifest, () => Config.RunOnDayStart, v => Config.RunOnDayStart = v, I18n.RunDayStart, I18n.RunDayStart_Desc);
+        cm.AddBoolOption(ModManifest, () => Config.RunOnDayEnd, v => Config.RunOnDayEnd= v, I18n.RunDayEnd, I18n.RunDayEnd_Desc);
         cm.AddParagraph(ModManifest, I18n.GeneralSettingsInfo);
         cm.AddBoolOption(ModManifest, () => Config.SpecialOrders, v => Config.SpecialOrders = v, I18n.SpecialOrders, I18n.SpecialOrders_Desc);
         cm.AddBoolOption(ModManifest, () => Config.GrabberRecipes, v => Config.GrabberRecipes = v, I18n.GrabberRecipes, I18n.GrabberRecipes_Desc);

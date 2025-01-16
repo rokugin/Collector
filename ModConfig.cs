@@ -11,6 +11,8 @@ internal class ModConfig {
 
     public bool GrabberRecipes { get; set; } = false;
     public bool SpecialOrders { get; set; } = true;
+    public bool RunOnDayStart { get; set; } = true;
+    public bool RunOnDayEnd { get; set; } = true;
 
     public bool CollectAnimalProduce { get; set; } = true;
     public bool CollectCrops { get; set; } = true;
