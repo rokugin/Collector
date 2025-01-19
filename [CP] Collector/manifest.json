@@ -5,7 +5,7 @@
   "Version": "1.0.0",
   "Description": "CP component for Collector mod.",
   "UniqueID": "rokugin.collectorcp",
-  "UpdateKeys": [ "Nexus:30110" ],
+  "UpdateKeys": [ "Nexus:-1" ],
   "ContentPackFor": {
     "UniqueID": "Pathoschild.ContentPatcher"
   },
