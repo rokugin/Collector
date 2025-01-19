@@ -65,11 +65,24 @@ internal class ModEntry : Mod {
             }
 
             if (pair.Value.QualifiedItemId == ItemRegistry.GetDataOrErrorItem("(O)430").QualifiedItemId) {
-                DelayedAction action = new DelayedAction(500);
-                action.behavior = () => {
-                    Collector.DoCollection(e.Location);
-                };
-                Game1.delayedActions.Add(action);
+                if (collectorLocations.Contains(e.Location)) {
+                    DelayedAction action = new DelayedAction(500);
+                    action.behavior = () => {
+                        Collector.itemsToCollect.Clear();
+                        Collector.objectsToRemove.Clear();
+
+                        Collector.CollectForageAndSpawnedObject(pair.Value);
+
+                        foreach (var item in Collector.itemsToCollect) {
+                            Collector.AddItem(item);
+                        }
+
+                        foreach (var o in Collector.objectsToRemove) {
+                            e.Location.objects.Remove(o.TileLocation);
+                        }
+                    };
+                    Game1.delayedActions.Add(action);
+                }
             }
         }
         // when removing an object from a location, if it's a Collector check if there are any other Collectors in the location

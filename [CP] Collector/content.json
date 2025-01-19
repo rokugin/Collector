@@ -102,7 +102,7 @@
         },
         "{{ModId}}_CollectorDesignStartMail": {
           "Id": "{{ModId}}_CollectorDesignStartMail",
-          "Trigger": "DayStarted",
+          "Trigger": "DayEnding",
           "Actions": [ "AddMail Current {{ModId}}_CollectorDesignStartLetter tomorrow" ],
           "Condition": "!PLAYER_NPC_RELATIONSHIP Any Maru Married, PLAYER_HAS_MAIL Current {{ModId}}_CollectorDesignStartFlag Any, !PLAYER_HAS_SEEN_EVENT Current {{ModId}}_FirstQuestMaruStart"
         },

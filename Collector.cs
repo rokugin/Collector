@@ -22,9 +22,9 @@ namespace Collector;
 
 public class Collector {
 
-    List<Item> itemsToCollect = new();
-    List<SObject> objectsToRemove = new();
-    List<ResourceClump> clumpsToRemove = new();
+    public List<Item> itemsToCollect = new();
+    public List<SObject> objectsToRemove = new();
+    public List<ResourceClump> clumpsToRemove = new();
 
     static string CollectorID => ModEntry.CollectorID;
 
