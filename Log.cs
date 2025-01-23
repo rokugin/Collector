@@ -10,6 +10,8 @@ static class Log {
     /// <param name="message">The message to log.</param>
     /// <param name="alwaysShow">Whether to show the message regardless of config settings. Defaults to <c>false</c>.</param>
     public static void Info(string message, bool alwaysShow = false) {
+        if (!ModEntry.Config.VerboseLogging && !alwaysShow) return;
+
         ModEntry.SMonitor.Log(message, DesiredLogLevel(alwaysShow, LogLevel.Info));
     }
 

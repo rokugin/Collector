@@ -4,7 +4,7 @@ using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 using StardewValley;
 
-namespace Collector;
+namespace Collector.Integration;
 
 public interface IGenericModConfigMenuApi {
     /*********

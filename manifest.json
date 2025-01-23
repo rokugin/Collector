@@ -12,6 +12,14 @@
     {
       "UniqueID": "Pathoschild.ContentPatcher",
       "IsRequired": true
+    },
+    {
+      "UniqueID": "NCarigon.BushBloomMod",
+      "IsRequired": false
+    },
+    {
+      "UniqueID": "furyx639.CustomBush",
+      "IsRequired": false
     }
   ]
 }

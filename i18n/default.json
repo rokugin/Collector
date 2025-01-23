@@ -57,6 +57,8 @@
   "panning-logging.desc": "Enables logging for panning collection that occurs on time change.\nWarning: this happens every time the in-game clock changes, it can get very spammy.\nDefault: false",
   "informational-logging": "Informational Logging",
   "informational-logging.desc": "Enables logging non-collection information such as location names with Collectors.\nDefault: false",
+  "verbose-logging": "Verbose Logging",
+  "verbose-logging.desc": "Enables always posting logs at Trace level, even when normal logging level is disabled.\nOnly enable if creating a log to send for support with the Collector mod.\nDefault: false",
   "debugging": "Debugging",
   "collector-settings": "Collector Settings",
   "collector-settings.desc": "Change what's collected.",

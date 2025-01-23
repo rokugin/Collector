@@ -1,6 +1,6 @@
 ﻿using StardewModdingAPI;
 
-namespace ContentPatcher;
+namespace Collector.Integration;
 
 public interface IContentPatcherAPI {
     /// <summary>Register a simple token.</summary>

@@ -1,5 +1,5 @@
-﻿using Collector.Patches;
-using ContentPatcher;
+﻿using Collector.Integration;
+using Collector.Patches;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -10,6 +10,8 @@ using SObject = StardewValley.Object;
 namespace Collector;
 
 internal class ModEntry : Mod {
+    public static IBushBloomModApi BBM = null!;
+    public static ICustomBushApi CB = null!;
     public static IMonitor SMonitor = null!;
     public static ModConfig Config = null!;
     public static ModConfigKeys Keys => Config.Controls;
@@ -35,6 +37,9 @@ internal class ModEntry : Mod {
         // patch to allow right clicking Collector to open inventory
         harmony.Patch(original: AccessTools.Method(typeof(SObject), nameof(SObject.checkForAction)),
             prefix: new HarmonyMethod(typeof(ObjectPatch), nameof(ObjectPatch.CheckForAction_Prefix)));
+        // patch to allow right clicking Collector when holding an Object to open inventory
+        harmony.Patch(original: AccessTools.Method(typeof(SObject), nameof(SObject.performObjectDropInAction)),
+            prefix: new HarmonyMethod(typeof(ObjectPatch), nameof(ObjectPatch.PerformObjectDropInAction_Prefix)));
         // patch to remove special order timer in quest log
         harmony.Patch(original: AccessTools.Method(typeof(SpecialOrder), nameof(SpecialOrder.IsTimedQuest)),
             postfix: new HarmonyMethod(typeof(SpecialOrderPatch), nameof(SpecialOrderPatch.IsTimedQuest_Postfix)));
@@ -68,18 +73,7 @@ internal class ModEntry : Mod {
                 if (collectorLocations.Contains(e.Location)) {
                     DelayedAction action = new DelayedAction(500);
                     action.behavior = () => {
-                        Collector.itemsToCollect.Clear();
-                        Collector.objectsToRemove.Clear();
-
-                        Collector.CollectForageAndSpawnedObject(pair.Value);
-
-                        foreach (var item in Collector.itemsToCollect) {
-                            Collector.AddItem(item);
-                        }
-
-                        foreach (var o in Collector.objectsToRemove) {
-                            e.Location.objects.Remove(o.TileLocation);
-                        }
+                        Collector.DoCollection(e.Location);
                     };
                     Game1.delayedActions.Add(action);
                 }
@@ -113,7 +107,7 @@ internal class ModEntry : Mod {
         DelayedAction action = new DelayedAction(500);
         action.behavior = () => {
             List<Item> items = new();
-            string output = $"\n=====Panning Spots=====\n";
+            Collector.yieldInfo = $"\n=====Panning Spots=====\n";
 
             if (!Config.AllowGlobalCollector) {
                 foreach (var location in collectorLocations) {
@@ -127,22 +121,12 @@ internal class ModEntry : Mod {
                 });
             }
 
-            List<Item> oldCollectorList = Collector.GetCollectorInventory().ToList();
-
             foreach (var item in items) {
                 Collector.AddItem(item);
             }
 
-            List<Item> newCollectorList = Collector.GetCollectorInventory().ToList();
-            Collector.DoDebugInfo(oldCollectorList, newCollectorList);
-
-            if (newCollectorList.Count > 0) {
-                foreach (var item in newCollectorList) {
-                    output += $"{item.Stack}x {(item.Quality != 0 ? Collector.GetQualityName(item.Quality) + " " : "")}{item.DisplayName} collected.\n";
-                }
-
-                Log.Info(output, Config.PanningLogging);
-            }
+            if (Collector.yieldCount > 0) Log.Info(Collector.yieldInfo, Config.PanningLogging);
+            Collector.yieldCount = 0;
         };
         Game1.delayedActions.Add(action);
     }
@@ -155,7 +139,7 @@ internal class ModEntry : Mod {
             }
         }
     }
-    
+
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e) {
         if (Context.IsPlayerFree) {
             if (Context.IsMainPlayer && Config.AllowGlobalCollector && Keys.ActivateGlobalCollector.JustPressed()) {
@@ -225,6 +209,9 @@ internal class ModEntry : Mod {
 
         RegisterContentPatcherTokens();
 
+        BBM = Helper.ModRegistry.GetApi<IBushBloomModApi>("NCarigon.BushBloomMod")!;
+        CB = Helper.ModRegistry.GetApi<ICustomBushApi>("furyx639.CustomBush")!;
+
         var cm = Helper.ModRegistry.GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
 
         if (cm is null) return;
@@ -238,7 +225,7 @@ internal class ModEntry : Mod {
 
         cm.AddPage(ModManifest, "GeneralSettings", I18n.GeneralSettings);
         cm.AddBoolOption(ModManifest, () => Config.RunOnDayStart, v => Config.RunOnDayStart = v, I18n.RunDayStart, I18n.RunDayStart_Desc);
-        cm.AddBoolOption(ModManifest, () => Config.RunOnDayEnd, v => Config.RunOnDayEnd= v, I18n.RunDayEnd, I18n.RunDayEnd_Desc);
+        cm.AddBoolOption(ModManifest, () => Config.RunOnDayEnd, v => Config.RunOnDayEnd = v, I18n.RunDayEnd, I18n.RunDayEnd_Desc);
         cm.AddParagraph(ModManifest, I18n.GeneralSettingsInfo);
         cm.AddBoolOption(ModManifest, () => Config.SpecialOrders, v => Config.SpecialOrders = v, I18n.SpecialOrders, I18n.SpecialOrders_Desc);
         cm.AddBoolOption(ModManifest, () => Config.GrabberRecipes, v => Config.GrabberRecipes = v, I18n.GrabberRecipes, I18n.GrabberRecipes_Desc);
@@ -246,73 +233,48 @@ internal class ModEntry : Mod {
         cm.AddPage(ModManifest, "Cheats", I18n.Cheats);
         cm.AddBoolOption(ModManifest, () => Config.AllowGlobalCollector, v => Config.AllowGlobalCollector = v,
             I18n.GlobalCollector, I18n.GlobalCollector_Desc);
-
         cm.AddKeybindList(ModManifest, () => Config.Controls.ActivateGlobalCollector, v => Config.Controls.ActivateGlobalCollector = v,
             I18n.GlobalCollector_Func, I18n.GlobalCollector_FuncDesc);
-
         cm.AddBoolOption(ModManifest, () => Config.OpenCollectorInventoryAnywhere, v => Config.OpenCollectorInventoryAnywhere = v,
             I18n.InventoryAnywhere, I18n.InventoryAnywhere_Desc);
-
         cm.AddKeybindList(ModManifest, () => Config.Controls.OpenCollectorInventory, v => Config.Controls.OpenCollectorInventory = v,
             I18n.InventoryAnywhere_Func, I18n.InventoryAnywhere_FuncDesc);
 
         cm.AddPage(ModManifest, "Debugging", I18n.Debugging);
         cm.AddBoolOption(ModManifest, () => Config.AllLogging, v => Config.AllLogging = v, I18n.AllLogging, I18n.AllLogging_Desc);
-
         cm.AddBoolOption(ModManifest, () => Config.InformationalLogging, v => Config.InformationalLogging = v,
             I18n.InformationalLogging, I18n.InformationalLogging_Desc);
-
-        cm.AddBoolOption(ModManifest, () => Config.CollectionLogging, v => Config.CollectionLogging = v, 
+        cm.AddBoolOption(ModManifest, () => Config.CollectionLogging, v => Config.CollectionLogging = v,
             I18n.CollectionLogging, I18n.CollectionLogging_Desc);
-
         cm.AddBoolOption(ModManifest, () => Config.PanningLogging, v => Config.PanningLogging = v, I18n.PanningLogging, I18n.PanningLogging_Desc);
+        cm.AddBoolOption(ModManifest, () => Config.VerboseLogging, v => Config.VerboseLogging = v, I18n.VerboseLogging, I18n.VerboseLogging_Desc);
 
         cm.AddPage(ModManifest, "CollectorSettings", I18n.CollectorSettings);
         cm.AddBoolOption(ModManifest, () => Config.CollectAnimalProduce, v => Config.CollectAnimalProduce = v,
             I18n.AnimalProduce, I18n.AnimalProduce_Desc);
-
-        cm.AddBoolOption(ModManifest, () => Config.CollectArtifactSpots, v => Config.CollectArtifactSpots = v, 
+        cm.AddBoolOption(ModManifest, () => Config.CollectArtifactSpots, v => Config.CollectArtifactSpots = v,
             I18n.ArtifactSpots, I18n.ArtifactSpots_Desc);
-
         cm.AddBoolOption(ModManifest, () => Config.CollectBerryBushes, v => Config.CollectBerryBushes = v, I18n.BerryBushes, I18n.BerryBushes_Desc);
-
         cm.AddBoolOption(ModManifest, () => Config.CollectCrabPots, v => Config.CollectCrabPots = v, I18n.CrabPots, I18n.CrabPots_Desc);
-
         cm.AddBoolOption(ModManifest, () => Config.CollectCrops, v => Config.CollectCrops = v, I18n.Crops, I18n.Crops_Desc);
-
         cm.AddBoolOption(ModManifest, () => Config.CollectFlowers, v => Config.CollectFlowers = v, I18n.Flowers, I18n.Flowers_Desc);
-
         cm.AddBoolOption(ModManifest, () => Config.CollectForage, v => Config.CollectForage = v, I18n.Forage, I18n.Forage_Desc);
-
         cm.AddBoolOption(ModManifest, () => Config.CollectFruitTrees, v => Config.CollectFruitTrees = v, I18n.FruitTrees, I18n.FruitTrees_Desc);
-
         cm.AddBoolOption(ModManifest, () => Config.CollectGarbageCans, v => Config.CollectGarbageCans = v, I18n.GarbageCans, I18n.GarbageCans_Desc);
-
         cm.AddBoolOption(ModManifest, () => Config.CollectGardenPots, v => Config.CollectGardenPots = v, I18n.GardenPots, I18n.GardenPots_Desc);
-
         cm.AddBoolOption(ModManifest, () => Config.CollectGinger, v => Config.CollectGinger = v, I18n.Ginger, I18n.Ginger_Desc);
-
         cm.AddBoolOption(ModManifest, () => Config.CollectMoss, v => Config.CollectMoss = v, I18n.Moss, I18n.Moss_Desc);
-
-        cm.AddBoolOption(ModManifest, () => Config.CollectMushroomBoxes, v => Config.CollectMushroomBoxes = v, 
+        cm.AddBoolOption(ModManifest, () => Config.CollectMushroomBoxes, v => Config.CollectMushroomBoxes = v,
             I18n.MushroomBoxes, I18n.MushroomBoxes_Desc);
-
         cm.AddBoolOption(ModManifest, () => Config.CollectPanningSpots, v => Config.CollectPanningSpots = v, I18n.PanningSpots, I18n.PanningSpots_Desc);
-
         cm.AddBoolOption(ModManifest, () => Config.CollectSecretWoodsStumps, v => Config.CollectSecretWoodsStumps = v,
             I18n.SecretWoodsStumps, I18n.SecretWoodsStumps_Desc);
-
         cm.AddBoolOption(ModManifest, () => Config.CollectSeedSpots, v => Config.CollectSeedSpots = v, I18n.SeedSpots, I18n.SeedSpots_Desc);
-
         cm.AddBoolOption(ModManifest, () => Config.CollectSlimeBalls, v => Config.CollectSlimeBalls = v, I18n.SlimeBalls, I18n.SlimeBalls_Desc);
-
-        cm.AddBoolOption(ModManifest, () => Config.CollectSpawnedObjects, v => Config.CollectSpawnedObjects = v, 
+        cm.AddBoolOption(ModManifest, () => Config.CollectSpawnedObjects, v => Config.CollectSpawnedObjects = v,
             I18n.SpawnedObjects, I18n.SpawnedObjects_Desc);
-
         cm.AddBoolOption(ModManifest, () => Config.CollectSpringOnions, v => Config.CollectSpringOnions = v, I18n.SpringOnions, I18n.SpringOnions_Desc);
-
         cm.AddBoolOption(ModManifest, () => Config.CollectTeaBushes, v => Config.CollectTeaBushes = v, I18n.TeaBushes, I18n.TeaBushes_Desc);
-
         cm.AddBoolOption(ModManifest, () => Config.CollectTreeForage, v => Config.CollectTreeForage = v, I18n.TreeForage, I18n.TreeForage_Desc);
     }
 
