@@ -129,4 +129,25 @@ public class CollectorItemGrabMenu : ItemGrabMenu {
         SetupBorderNeighbors();
     }
 
+    public CollectorItemGrabMenu(ItemGrabMenu menu)
+        : this(menu.ItemsToGrabMenu.actualInventory, menu.reverseGrab, menu.showReceivingMenu, menu.inventory.highlightMethod, menu.behaviorFunction, menu.message, menu.behaviorOnItemGrab, snapToBottom: false, menu.canExitOnKey, menu.playRightClickSound, menu.allowRightClick, menu.organizeButton != null, menu.source, menu.sourceItem, menu.whichSpecialButton, menu.context, menu.HeldItemExitBehavior, menu.AllowExitWithHeldItem) {
+        this.setEssential(menu.essential);
+        if (menu.currentlySnappedComponent != null) {
+            this.setCurrentlySnappedComponentTo(menu.currentlySnappedComponent.myID);
+            if (Game1.options.SnappyMenus) {
+                this.snapCursorToCurrentSnappedComponent();
+            }
+        }
+        base.heldItem = menu.heldItem;
+    }
+
+    public override void receiveLeftClick(int x, int y, bool playSound = true) {
+        base.receiveLeftClick(x, y, !this.destroyItemOnClick);
+        if (this.organizeButton != null && this.organizeButton.containsPoint(x, y)) {
+            ItemGrabMenu.organizeItemsInList(this.ItemsToGrabMenu.actualInventory);
+            Game1.activeClickableMenu = new CollectorItemGrabMenu(this);
+            Game1.playSound("Ship");
+        }
+    }
+
 }

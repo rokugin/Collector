@@ -13,8 +13,10 @@ internal class ModEntry : Mod {
     public static IBushBloomModApi BBM = null!;
     public static ICustomBushApi CB = null!;
     public static IMonitor SMonitor = null!;
+
     public static ModConfig Config = null!;
     public static ModConfigKeys Keys => Config.Controls;
+
     public static string CollectorID = "(BC)rokugin.collectorcp_Collector";
 
     Collector Collector = new();
@@ -239,6 +241,19 @@ internal class ModEntry : Mod {
             I18n.InventoryAnywhere, I18n.InventoryAnywhere_Desc);
         cm.AddKeybindList(ModManifest, () => Config.Controls.OpenCollectorInventory, v => Config.Controls.OpenCollectorInventory = v,
             I18n.InventoryAnywhere_Func, I18n.InventoryAnywhere_FuncDesc);
+        cm.AddSectionTitle(ModManifest, I18n.Enchantments);
+        cm.AddBoolOption(ModManifest, () => Config.ShavingEnchantment, v => Config.ShavingEnchantment = v,
+            I18n.ShavingEnchant, I18n.ShavingEnchant_Desc);
+        cm.AddBoolOption(ModManifest, () => Config.FisherEnchantment, v => Config.FisherEnchantment = v,
+            I18n.FisherEnchant, I18n.FisherEnchant_Desc);
+        cm.AddBoolOption(ModManifest, () => Config.PanArchaeologistEnchantment, v => Config.PanArchaeologistEnchantment = v,
+            I18n.PanArchEnchant, I18n.PanArchEnchant_Desc);
+        cm.AddBoolOption(ModManifest, () => Config.PanGenerousEnchantment, v => Config.PanGenerousEnchantment = v,
+            I18n.PanGenerousEnchant, I18n.PanGenerousEnchant_Desc);
+        cm.AddBoolOption(ModManifest, () => Config.HoeArchaeologistEnchantment, v => Config.HoeArchaeologistEnchantment = v,
+            I18n.HoeArchEnchant, I18n.HoeArchEnchant_Desc);
+        cm.AddBoolOption(ModManifest, () => Config.HoeGenerousEnchantment, v => Config.HoeGenerousEnchantment = v,
+            I18n.HoeGenerousEnchant, I18n.HoeGenerousEnchant_Desc);
 
         cm.AddPage(ModManifest, "Debugging", I18n.Debugging);
         cm.AddBoolOption(ModManifest, () => Config.AllLogging, v => Config.AllLogging = v, I18n.AllLogging, I18n.AllLogging_Desc);

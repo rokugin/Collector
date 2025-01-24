@@ -17,7 +17,8 @@ using SObject = StardewValley.Object;
 using xTile.ObjectModel;
 using StardewValley.Locations;
 using StardewValley.GameData.FarmAnimals;
-using Collector.Integration;
+using StardewValley.Tools;
+using StardewValley.Enchantments;
 
 namespace Collector;
 
@@ -29,7 +30,7 @@ public class Collector {
     public string yieldInfo = "";
     public int yieldCount = 0;
 
-    static string CollectorID => ModEntry.CollectorID;
+    public static string CollectorID => ModEntry.CollectorID;
 
     ModConfig config => ModEntry.Config;
 
@@ -37,6 +38,9 @@ public class Collector {
 
     const int Farming = 0, Fishing = 1, Foraging = 2, Mining = 3, Combat = 4;
     const int Forester = 12, Gatherer = 13, Botanist = 16;
+    const string copperOre = "378", iridiumOre = "386", goldOre = "384", ironOre = "380", boneFragment = "881", coal = "382";
+    const string diamond = "72", omniGeode = "749", fireQuartz = "82", frozenTear = "84", earthCrystal = "86";
+    const string luckyRing = "859", artifactTrove = "(O)275", taroTuber = "(O)831", fossilizedTail = "(O)822";
 
     bool collectAnimalProduce => config.CollectAnimalProduce;
     bool collectForage => config.CollectForage;
@@ -454,16 +458,16 @@ public class Collector {
 
         return items;
     }
-
+    
     public List<Item> GetPanItems(GameLocation location, Farmer who) {
         List<Item> items = new();
         try {
-            string whichOre = "378";
+            string whichOre = copperOre;
             string whichExtra = null!;
             int upgradeLevel = 1;
-            bool archaeologistEnchantment = false;
-            bool generousEnchantment = false;
-            bool fisherEnchantment = false;
+            bool archaeologistEnchantment = ModEntry.Config.PanArchaeologistEnchantment;
+            bool generousEnchantment = ModEntry.Config.PanGenerousEnchantment;
+            bool fisherEnchantment = ModEntry.Config.FisherEnchantment;
             int enchantments = 0;
             int experience = 0;
 
@@ -476,15 +480,15 @@ public class Collector {
             roll -= (upgradeLevel - 1) * 0.05;
 
             if (roll < 0.01) {
-                whichOre = "386";
+                whichOre = iridiumOre;
             } else if (roll < 0.241) {
-                whichOre = "384";
+                whichOre = goldOre;
             } else if (roll < 0.6) {
-                whichOre = "380";
+                whichOre = ironOre;
             }
 
-            if (whichOre != "386" && r.NextDouble() < 0.1 + (archaeologistEnchantment ? 0.1 : 0.0)) {
-                whichOre = "881";
+            if (whichOre != iridiumOre && r.NextDouble() < 0.1 + (archaeologistEnchantment ? 0.1 : 0.0)) {
+                whichOre = boneFragment;
             }
 
             int orePieces = r.Next(2, 7) + 1 + (int)((r.NextDouble() + 0.1 + (double)(who.luckLevel.Value / 10f) + who.DailyLuck) * 2.0);
@@ -502,27 +506,28 @@ public class Collector {
             if (generousEnchantment) {
                 numRolls += 2;
             }
+            
             while (r.NextDouble() - who.DailyLuck < 0.4 + who.LuckLevel * 0.04 + extraChance && numRolls > 0) {
                 roll = r.NextDouble() - who.DailyLuck;
                 roll -= (upgradeLevel - 1) * 0.005;
 
-                whichExtra = "382";
+                whichExtra = coal;
                 if (roll < 0.02 + who.LuckLevel * 0.002 && r.NextDouble() < 0.75) {
-                    whichExtra = "72";
+                    whichExtra = diamond;
                     extraPieces = 1;
                 } else if (roll < 0.1 && r.NextDouble() < 0.75) {
                     whichExtra = (60 + r.Next(5) * 2).ToString();
                     extraPieces = 1;
                 } else if (roll < 0.36) {
-                    whichExtra = "749";
+                    whichExtra = omniGeode;
                     extraPieces = Math.Max(1, extraPieces / 2);
                 } else if (roll < 0.5) {
-                    whichExtra = r.Choose("82", "84", "86");
+                    whichExtra = r.Choose(fireQuartz, frozenTear, earthCrystal);
                     extraPieces = 1;
                 }
-
+                
                 if (roll < who.LuckLevel * 0.002 && !gotRing && r.NextDouble() < 0.33) {
-                    items.Add(new Ring("859"));
+                    items.Add(new Ring(luckyRing));
                     gotRing = true;
                     experience++;
                 }
@@ -564,9 +569,9 @@ public class Collector {
             while (r.NextDouble() < 0.05 + (archaeologistEnchantment ? 0.15 : 0.0)) {
                 amount++;
             }
-
+            
             if (amount > 0) {
-                items.Add(ItemRegistry.Create("(O)275", amount));
+                items.Add(ItemRegistry.Create(artifactTrove, amount));
                 experience++;
             }
 
@@ -575,11 +580,11 @@ public class Collector {
 
             if (!(location is IslandNorth islandNorth)) {
                 if (location is IslandLocation && r.NextDouble() < 0.2) {
-                    items.Add(ItemRegistry.Create("(O)831", r.Next(2, 6)));
+                    items.Add(ItemRegistry.Create(taroTuber, r.Next(2, 6)));
                     experience++;
                 }
             } else if (islandNorth.bridgeFixed.Value && r.NextDouble() < 0.2) {
-                items.Add(ItemRegistry.Create("(O)822"));
+                items.Add(ItemRegistry.Create(fossilizedTail));
                 experience++;
             }
 
@@ -685,11 +690,11 @@ public class Collector {
     public void CollectTreeForage(TerrainFeature feature) {
         try {
             if (feature is Tree tree) {
-                if (collectTreeForage && tree.hasSeed.Value && (Game1.IsMultiplayer || Game1.player.ForagingLevel >= 1)) {
+                if (collectTreeForage && (Game1.IsMultiplayer || Game1.player.ForagingLevel >= 1)) {
                     bool dropDefaultSeed = true;
                     WildTreeData data = tree.GetData();
 
-                    if (data != null && data.SeedDropItems?.Count > 0) {
+                    if (tree.hasSeed.Value && data != null && data.SeedDropItems?.Count > 0) {
                         foreach (var drop in data.SeedDropItems) {
                             Item item = tree.TryGetDrop(drop, Game1.random, Game1.player, "SeedDropItems");
                             if (item != null) {
@@ -709,7 +714,21 @@ public class Collector {
                         }
                     }
 
-                    if (dropDefaultSeed && data != null) {
+                    if (data != null && data.ShakeItems?.Count > 0) {
+                        foreach (var drop in data.ShakeItems) {
+                            Item item = tree.TryGetDrop(drop, Game1.random, Game1.player, "ShakeItems");
+                            if (item != null) {
+                                if (AnyBotanist() && item.HasContextTag("forage_item")) {
+                                    item.Quality = 4;
+                                }
+
+                                AddYieldInfo(item, feature.Tile, "Tree");
+                                itemsToCollect.Add(item);
+                            }
+                        }
+                    }
+
+                    if (tree.hasSeed.Value && dropDefaultSeed && data != null) {
                         Item item = ItemRegistry.Create(data.SeedItemId);
 
                         if (AnyBotanist() && item.HasContextTag("forage_item")) {
@@ -741,6 +760,8 @@ public class Collector {
 
                         tree.hasSeed.Value = false;
                     }
+
+                    tree.wasShakenToday.Value = true;
                 }
 
                 if (collectMoss && tree.hasMoss.Value) {
@@ -809,8 +830,10 @@ public class Collector {
                     farmer.stats.Increment("ArtifactSpotsDug", 1);
                 }
 
-                if (randomPlayer.stats.Get("ArtifactSpotsDug") > 2 && r.NextDouble() < 0.008 +
-                        (!randomPlayer.mailReceived.Contains("DefenseBookDropped") ? randomPlayer.stats.Get("ArtifactSpotsDug") * 0.002 : 0.005)) {
+                Farmer cachedRandomPlayer = randomPlayer;
+                if (cachedRandomPlayer.stats.Get("ArtifactSpotsDug") > 2 && r.NextDouble() < 0.008 +
+                        (!cachedRandomPlayer.mailReceived.Contains("DefenseBookDropped") ? cachedRandomPlayer.stats.Get("ArtifactSpotsDug") * 0.002 : 0.005)) {
+                    cachedRandomPlayer.mailReceived.Add("DefenseBookDropped");
                     Item item = ItemRegistry.Create("(O)Book_Defense");
                     AddYieldInfo(item, obj.TileLocation, obj.QualifiedItemId == "(O)SeedSpot" ? "Seed Spot" : "Artifact Spot");
                     itemsToCollect.Add(item);
@@ -990,9 +1013,15 @@ public class Collector {
         try {
             Random r = Utility.CreateDaySaveRandom(tile.X * 2000, tile.Y, Game1.netWorldState.Value.TreasureTotemsUsed * 777);
             LocationData locData = location.GetData();
+            Farmer fakeFarmer = new Farmer();
+            fakeFarmer.CurrentTool = new Hoe();
+            fakeFarmer.CurrentTool.AddEnchantment(new ArchaeologistEnchantment());
             ItemQueryContext itemQueryContext = new ItemQueryContext(location, farmer, r, "location '" + location.NameOrUniqueName + "' > artifact spots");
+            ItemQueryContext altItemQueryContext =
+                        new ItemQueryContext(location, fakeFarmer, r, "location '" + location.NameOrUniqueName + "' > artifact spots");
             IEnumerable<ArtifactSpotDropData> possibleDrops = Game1.locationData["Default"].ArtifactSpots;
-            bool generousEnchantment = false;
+            bool generousEnchantment = ModEntry.Config.HoeGenerousEnchantment;
+            bool archaeologistEnchantment = ModEntry.Config.HoeArchaeologistEnchantment;
 
             if (locData != null && locData.ArtifactSpots?.Count > 0) {
                 possibleDrops = possibleDrops.Concat(locData.ArtifactSpots);
@@ -1013,10 +1042,19 @@ public class Collector {
                     continue;
                 }
 
-                Item item = ItemQueryResolver.TryResolveRandomItem(drop, itemQueryContext, avoidRepeat: false, null, null, null,
-                    delegate (string query, string error) {
-                        Log.Error($"Location '{location.NameOrUniqueName}' failed parsing item query '{query}' for artifact spot '{drop.Id}': {error}");
-                    });
+                Item item = null!;
+
+                if (drop.Id == "RANDOM_ARTIFACT_FOR_DIG_SPOT" && archaeologistEnchantment) {
+                    item = ItemQueryResolver.TryResolveRandomItem(drop, altItemQueryContext, avoidRepeat: false, null, null, null,
+                        delegate (string query, string error) {
+                            Log.Error($"Location '{location.NameOrUniqueName}' failed parsing item query '{query}' for artifact spot '{drop.Id}': {error}");
+                        });
+                } else {
+                    item = ItemQueryResolver.TryResolveRandomItem(drop, itemQueryContext, avoidRepeat: false, null, null, null,
+                        delegate (string query, string error) {
+                            Log.Error($"Location '{location.NameOrUniqueName}' failed parsing item query '{query}' for artifact spot '{drop.Id}': {error}");
+                        });
+                }
 
                 if (item == null || (Game1.netWorldState.Value.LostBooksFound >= 21 && item.QualifiedItemId == "(O)102")) {
                     continue;

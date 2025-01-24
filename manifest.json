@@ -2,7 +2,7 @@
   "$schema": "https://smapi.io/schemas/manifest.json",
   "Name": "Collector",
   "Author": "rokugin",
-  "Version": "1.0.1",
+  "Version": "1.0.2",
   "Description": "Adds Collector that collects various items.",
   "UniqueID": "rokugin.collector",
   "EntryDll": "Collector.dll",
