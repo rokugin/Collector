@@ -2,8 +2,8 @@
   "$schema": "https://smapi.io/schemas/manifest.json",
   "Name": "Collector",
   "Author": "rokugin",
-  "Version": "1.0.2",
-  "Description": "Adds Collector that collects various items.",
+  "Version": "1.0.3",
+  "Description": "Adds Collector big craftable that collects various items from the map.",
   "UniqueID": "rokugin.collector",
   "EntryDll": "Collector.dll",
   "MinimumApiVersion": "4.1.0",
@@ -19,6 +19,10 @@
     },
     {
       "UniqueID": "furyx639.CustomBush",
+      "IsRequired": false
+    },
+    {
+      "UniqueID": "DaLion.Professions",
       "IsRequired": false
     }
   ]

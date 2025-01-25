@@ -12,9 +12,11 @@ namespace Collector;
 internal class ModEntry : Mod {
     public static IBushBloomModApi BBM = null!;
     public static ICustomBushApi CB = null!;
-    public static IMonitor SMonitor = null!;
+    public static IProfessionsApi WoL = null!;
 
+    public static IMonitor SMonitor = null!;
     public static ModConfig Config = null!;
+    public static IModHelper ModHelper = null!;
     public static ModConfigKeys Keys => Config.Controls;
 
     public static string CollectorID = "(BC)rokugin.collectorcp_Collector";
@@ -24,6 +26,7 @@ internal class ModEntry : Mod {
 
     public override void Entry(IModHelper helper) {
         Config = helper.ReadConfig<ModConfig>();
+        ModHelper = helper;
         SMonitor = Monitor;
         I18n.Init(helper.Translation);
 
@@ -213,6 +216,7 @@ internal class ModEntry : Mod {
 
         BBM = Helper.ModRegistry.GetApi<IBushBloomModApi>("NCarigon.BushBloomMod")!;
         CB = Helper.ModRegistry.GetApi<ICustomBushApi>("furyx639.CustomBush")!;
+        WoL = Helper.ModRegistry.GetApi<IProfessionsApi>("DaLion.Professions")!;
 
         var cm = Helper.ModRegistry.GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
 

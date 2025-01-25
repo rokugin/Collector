@@ -255,20 +255,12 @@ public class Collector {
             Log.Error($"\nException in CollectGarbageCans.\nError message:\n{e.Message}");
         }
     }
-    //TODO: Add compatibility for Custom Bush
+    
     public void CollectGardenPot(SObject obj) {
         try {
             if (collectGardenPots && obj is IndoorPot pot) {
-                if (collectTeaBushes && pot.bush.Value is Bush bush && bush.readyForHarvest()) {
-                    string shakeOff = bush.GetShakeOffItem();
-
-                    if (shakeOff == null) return;
-
-                    bush.tileSheetOffset.Value = 0;
-                    bush.setUpSourceRect();
-                    Item item = ItemRegistry.Create(shakeOff);
-                    AddYieldInfo(item, pot.TileLocation, "Garden Pot");
-                    itemsToCollect.Add(item);
+                if (collectTeaBushes && pot.bush.Value is Bush bush) {
+                    CollectTeaBush(bush);
                 }
 
                 if (pot.hoeDirt.Value.crop != null) {
@@ -771,9 +763,27 @@ public class Collector {
         try {
             if ((obj.isForage() || obj.IsSpawnedObject) && obj.questItem.Value == false) {
                 Random r = Utility.CreateDaySaveRandom(obj.TileLocation.X, obj.TileLocation.Y * 777f);
-                Item item = ItemRegistry.Create(obj.QualifiedItemId);
+
+                if (ModEntry.ModHelper.ModRegistry.IsLoaded("DaLion.Professions") && obj.Edibility > 0) {
+                    double multiplier = 0;
+                    foreach (var farmer in Game1.getOnlineFarmers()) {
+                        if (farmer.professions.Contains(116)) {
+                            multiplier = 1;
+                        } else if (farmer.professions.Contains(16)) {
+                            multiplier = 0.5;
+                        }
+                    }
+
+                    obj.Edibility = (int)(obj.Edibility * multiplier) + obj.Edibility;
+                }
+
                 int quality = GetHarvestedSpawnedObjectQuality(obj.isForage(), obj.TileLocation, r);
-                item.Quality = obj.isForage() ? quality : obj.Quality;
+
+                if (ModEntry.ModHelper.ModRegistry.IsLoaded("DaLion.Professions") && ModEntry.WoL is not null) {
+                    quality = ModEntry.WoL.GetEcologistForageQuality(randomPlayer);
+                }
+
+                obj.Quality = obj.isForage() ? quality : obj.Quality;
 
                 if (obj.isForage()) {
                     bool gatherer = false;
@@ -781,7 +791,8 @@ public class Collector {
                         if (gatherer) break;
                         gatherer = farmer.professions.Contains(Gatherer) && r.NextDouble() < 0.2;
                     }
-                    if (gatherer) item.Stack = 2;
+
+                    if (gatherer) obj.Stack = 2;
 
                     if (obj.SpecialVariable == 724519) {
                         OnlineFarmersGainExperience(Foraging, 2);
@@ -793,12 +804,10 @@ public class Collector {
                     if (gatherer) OnlineFarmersGainExperience(Foraging, 7);
 
                     Game1.stats.ItemsForaged++;
-                } else {
-                    item.Stack = obj.Stack;
                 }
 
-                AddYieldInfo(item, obj.TileLocation);
-                itemsToCollect.Add(item);
+                AddYieldInfo(obj, obj.TileLocation);
+                itemsToCollect.Add(obj);
                 objectsToRemove.Add(obj);
             }
         }
