@@ -110,22 +110,6 @@ public class Collector {
         }
     }
 
-    public void OnlineFarmersGainExperience(int which, int howMuch, Farmer[] exclusions) {
-        foreach (var farmer in Game1.getOnlineFarmers()) {
-            if (!exclusions.Contains(farmer)) {
-                farmer.gainExperience(which, howMuch);
-            }
-        }
-    }
-
-    public List<Item> DoDebugInfo(List<Item> oldList, List<Item> newList) {
-        foreach (var item in oldList) {
-            newList.Remove(item);
-        }
-
-        return newList;
-    }
-
     public string GetQualityName(int quality) {
         string name = "";
         switch (quality) {
@@ -271,7 +255,7 @@ public class Collector {
             Log.Error($"\nException in CollectGarbageCans.\nError message:\n{e.Message}");
         }
     }
-
+    //TODO: Add compatibility for Custom Bush
     public void CollectGardenPot(SObject obj) {
         try {
             if (collectGardenPots && obj is IndoorPot pot) {
@@ -380,8 +364,8 @@ public class Collector {
         try {
             if (collectSecretWoodsStumps && clump.parentSheetIndex.Value == 600) {
                 Item item = null!;
-                int upgradeLevel = 1;
-                bool shavingEnchantment = false;
+                int upgradeLevel = ModEntry.Config.AxeUpgradeLevel;
+                bool shavingEnchantment = ModEntry.Config.ShavingEnchantment;
                 float power = Math.Max(1f, (upgradeLevel + 1) * 0.75f);
 
                 int chops = (int)(clump.health.Value / power);
@@ -458,7 +442,7 @@ public class Collector {
 
         return items;
     }
-    
+
     public List<Item> GetPanItems(GameLocation location, Farmer who) {
         List<Item> items = new();
         try {
@@ -506,7 +490,7 @@ public class Collector {
             if (generousEnchantment) {
                 numRolls += 2;
             }
-            
+
             while (r.NextDouble() - who.DailyLuck < 0.4 + who.LuckLevel * 0.04 + extraChance && numRolls > 0) {
                 roll = r.NextDouble() - who.DailyLuck;
                 roll -= (upgradeLevel - 1) * 0.005;
@@ -525,7 +509,7 @@ public class Collector {
                     whichExtra = r.Choose(fireQuartz, frozenTear, earthCrystal);
                     extraPieces = 1;
                 }
-                
+
                 if (roll < who.LuckLevel * 0.002 && !gotRing && r.NextDouble() < 0.33) {
                     items.Add(new Ring(luckyRing));
                     gotRing = true;
@@ -569,7 +553,7 @@ public class Collector {
             while (r.NextDouble() < 0.05 + (archaeologistEnchantment ? 0.15 : 0.0)) {
                 amount++;
             }
-            
+
             if (amount > 0) {
                 items.Add(ItemRegistry.Create(artifactTrove, amount));
                 experience++;
@@ -612,7 +596,7 @@ public class Collector {
                     string shakeOff = bush.GetShakeOffItem();
 
                     if (shakeOff == null) return;
-                    
+
                     bush.tileSheetOffset.Value = 0;
                     bush.setUpSourceRect();
                     item = ItemRegistry.Create(shakeOff);
@@ -628,37 +612,40 @@ public class Collector {
 
     public void CollectBush(LargeTerrainFeature feature) {
         try {
-            if (collectBerryBushes && feature is Bush bush && bush.size.Value == 1) {
+            if (collectBerryBushes && feature is Bush bush && bush.size.Value == 1 && bush.tileSheetOffset.Value == 1) {
+                Item item = null!;
+                int number = 0;
+
                 if (ModEntry.BBM is not null) {
                     string itemID = ModEntry.BBM.FakeShake(bush);
 
-                    if (itemID == null) return;
+                    if (itemID != null) {
+                        item = ItemRegistry.Create(itemID);
+                        number = 1 + randomPlayer.ForagingLevel / 4;
+                        item.Stack = number;
 
-                    Item item = ItemRegistry.Create(itemID);
-                    int number = 1 + randomPlayer.ForagingLevel / 4;
-                    item.Stack = number;
-
-                    if (AnyBotanist()) item.Quality = 4;
-                    AddYieldInfo(item, feature.Tile, "Berry Bush");
-                    itemsToCollect.Add(item);
-                    OnlineFarmersGainExperience(Foraging, number);
-                } else {
-                    string shakeOff = bush.GetShakeOffItem();
-
-                    if (shakeOff == null) return;
-
-                    bush.tileSheetOffset.Value = 0;
-                    bush.setUpSourceRect();
-                    int number = 1 + randomPlayer.ForagingLevel / 4;
-                    Item item = ItemRegistry.Create(shakeOff).getOne();
-                    item.Stack = number;
-
-                    if (AnyBotanist()) item.Quality = 4;
-
-                    AddYieldInfo(item, feature.Tile, "Berry Bush");
-                    itemsToCollect.Add(item);
-                    OnlineFarmersGainExperience(Foraging, number);
+                        if (AnyBotanist()) item.Quality = 4;
+                        AddYieldInfo(item, feature.Tile, "Berry Bush");
+                        itemsToCollect.Add(item);
+                        OnlineFarmersGainExperience(Foraging, number);
+                        return;
+                    }
                 }
+                string shakeOff = bush.GetShakeOffItem();
+
+                if (shakeOff == null) return;
+
+                bush.tileSheetOffset.Value = 0;
+                bush.setUpSourceRect();
+                number = 1 + randomPlayer.ForagingLevel / 4;
+                item = ItemRegistry.Create(shakeOff).getOne();
+                item.Stack = number;
+
+                if (AnyBotanist()) item.Quality = 4;
+
+                AddYieldInfo(item, feature.Tile, "Berry Bush");
+                itemsToCollect.Add(item);
+                OnlineFarmersGainExperience(Foraging, number);
             }
         }
         catch (Exception e) {
@@ -689,7 +676,7 @@ public class Collector {
 
     public void CollectTreeForage(TerrainFeature feature) {
         try {
-            if (feature is Tree tree) {
+            if (feature is Tree tree && !tree.wasShakenToday.Value) {
                 if (collectTreeForage && (Game1.IsMultiplayer || Game1.player.ForagingLevel >= 1)) {
                     bool dropDefaultSeed = true;
                     WildTreeData data = tree.GetData();

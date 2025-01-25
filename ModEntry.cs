@@ -242,14 +242,22 @@ internal class ModEntry : Mod {
         cm.AddKeybindList(ModManifest, () => Config.Controls.OpenCollectorInventory, v => Config.Controls.OpenCollectorInventory = v,
             I18n.InventoryAnywhere_Func, I18n.InventoryAnywhere_FuncDesc);
         cm.AddSectionTitle(ModManifest, I18n.Enchantments);
+        cm.AddParagraph(ModManifest, () => " ");
+        cm.AddSectionTitle(ModManifest, I18n.AxeSection);
         cm.AddBoolOption(ModManifest, () => Config.ShavingEnchantment, v => Config.ShavingEnchantment = v,
             I18n.ShavingEnchant, I18n.ShavingEnchant_Desc);
+        cm.AddNumberOption(ModManifest, () => Config.AxeUpgradeLevel, v => Config.AxeUpgradeLevel = v,
+            I18n.AxeUpgradeLevel, I18n.AxeUpgradeLevel_Desc, 1, interval: 1);
+        cm.AddSectionTitle(ModManifest, I18n.PanSection);
         cm.AddBoolOption(ModManifest, () => Config.FisherEnchantment, v => Config.FisherEnchantment = v,
             I18n.FisherEnchant, I18n.FisherEnchant_Desc);
         cm.AddBoolOption(ModManifest, () => Config.PanArchaeologistEnchantment, v => Config.PanArchaeologistEnchantment = v,
             I18n.PanArchEnchant, I18n.PanArchEnchant_Desc);
         cm.AddBoolOption(ModManifest, () => Config.PanGenerousEnchantment, v => Config.PanGenerousEnchantment = v,
             I18n.PanGenerousEnchant, I18n.PanGenerousEnchant_Desc);
+        cm.AddNumberOption(ModManifest, () => Config.PanUpgradeLevel, v => Config.PanUpgradeLevel = v,
+            I18n.PanUpgradeLevel, I18n.PanUpgradeLevel_Desc, 1, interval: 1);
+        cm.AddSectionTitle(ModManifest, I18n.HoeSection);
         cm.AddBoolOption(ModManifest, () => Config.HoeArchaeologistEnchantment, v => Config.HoeArchaeologistEnchantment = v,
             I18n.HoeArchEnchant, I18n.HoeArchEnchant_Desc);
         cm.AddBoolOption(ModManifest, () => Config.HoeGenerousEnchantment, v => Config.HoeGenerousEnchantment = v,

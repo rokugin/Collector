@@ -40,9 +40,11 @@ internal class ModConfig {
     public bool AllowGlobalCollector { get; set; } = false;
     public bool OpenCollectorInventoryAnywhere { get; set; } = false;
     public bool ShavingEnchantment { get; set; } = false;
+    public int AxeUpgradeLevel { get; set; } = 1;
     public bool PanArchaeologistEnchantment { get; set; } = false;
     public bool PanGenerousEnchantment { get; set; } = false;
     public bool FisherEnchantment { get; set; } = false;
+    public int PanUpgradeLevel { get; set; } = 1;
     public bool HoeGenerousEnchantment { get; set; } = false;
     public bool HoeArchaeologistEnchantment { get; set; } = false;
 
