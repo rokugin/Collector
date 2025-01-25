@@ -6,12 +6,20 @@
 		<Nullable>enable</Nullable>
 		<EnableHarmony>true</EnableHarmony>
 		<LangVersion>12.0</LangVersion>
+		<Name>Collector</Name>
+		<Authors>rokugin</Authors>
+		<Version>1.0.3</Version>
+		<Description>Adds Collector big craftable that collects various items from the map.</Description>
+		<UniqueId>rokugin.collector</UniqueId>
+		<MinimumApiVersion>4.1.0</MinimumApiVersion>
+		<MinimumGameVersion>1.6.15</MinimumGameVersion>
+		<UpdateKeys>Nexus:30110</UpdateKeys>
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Remove="Images\**" />
-	  <EmbeddedResource Remove="Images\**" />
-	  <None Remove="Images\**" />
+		<Compile Remove="Images\**" />
+		<EmbeddedResource Remove="Images\**" />
+		<None Remove="Images\**" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -21,6 +29,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Leclair.Stardew.ModManifestBuilder" Version="2.4.1" />
 		<PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.3.2" />
 		<PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.2.0" />
 	</ItemGroup>
@@ -29,8 +38,17 @@
 		<ContentPacks Include="[CP] Collector" Version="$(Version)" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<SMAPIDependency Include="Pathoschild.ContentPatcher" Version="2.4.0" Required="true"/>
+		<SMAPIDependency Include="NCarigon.BushBloomMod" Version="1.2.4" Required="false"/>
+		<SMAPIDependency Include="furyx639.CustomBush" Version="1.5.2" Required="false"/>
+		<SMAPIDependency Include="DaLion.Professions" Version="1.2.3" Required="false"/>
+	</ItemGroup>
+
 	<ProjectExtensions>
-		<VisualStudio><UserProperties _x005B_cp_x005D__x0020_collector_4content_1json__JsonSchema="" _x005B_cp_x005D__x0020_collector_4manifest_1json__JsonSchema="" manifest_1json__JsonSchema="" /></VisualStudio>
+		<VisualStudio>
+			<UserProperties _x005B_cp_x005D__x0020_collector_4content_1json__JsonSchema="" _x005B_cp_x005D__x0020_collector_4manifest_1json__JsonSchema="" manifest_1json__JsonSchema="" />
+		</VisualStudio>
 	</ProjectExtensions>
 
 </Project>

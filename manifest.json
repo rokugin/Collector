@@ -1,29 +1,42 @@
 {
+  /*
+   | This file is automatically updated by ModManifestBuilder
+   | when the project is compiled.
+   | 
+   | Changes made to this file may be overwritten.
+   | 
+   */
   "$schema": "https://smapi.io/schemas/manifest.json",
+  "UniqueID": "rokugin.collector",
   "Name": "Collector",
   "Author": "rokugin",
   "Version": "1.0.3",
   "Description": "Adds Collector big craftable that collects various items from the map.",
-  "UniqueID": "rokugin.collector",
-  "EntryDll": "Collector.dll",
   "MinimumApiVersion": "4.1.0",
-  "UpdateKeys": [ "Nexus:30110" ],
+  "MinimumGameVersion": "1.6.15",
+  "EntryDll": "Collector.dll",
   "Dependencies": [
     {
-      "UniqueID": "Pathoschild.ContentPatcher",
-      "IsRequired": true
-    },
-    {
-      "UniqueID": "NCarigon.BushBloomMod",
+      "UniqueID": "DaLion.Professions",
+      "MinimumVersion": "1.2.3",
       "IsRequired": false
     },
     {
       "UniqueID": "furyx639.CustomBush",
+      "MinimumVersion": "1.5.2",
       "IsRequired": false
     },
     {
-      "UniqueID": "DaLion.Professions",
+      "UniqueID": "NCarigon.BushBloomMod",
+      "MinimumVersion": "1.2.4",
       "IsRequired": false
+    },
+    {
+      "UniqueID": "Pathoschild.ContentPatcher",
+      "MinimumVersion": "2.4.0"
     }
+  ],
+  "UpdateKeys": [
+    "Nexus:30110"
   ]
 }

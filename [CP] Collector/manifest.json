@@ -2,10 +2,10 @@
   "$schema": "https://smapi.io/schemas/manifest.json",
   "Name": "Collector CP Component",
   "Author": "rokugin",
-  "Version": "1.0.0",
+  "Version": "1.0.3",
   "Description": "CP component for Collector mod.",
   "UniqueID": "rokugin.collectorcp",
-  "UpdateKeys": [ "Nexus:-1" ],
+  "UpdateKeys": [ "Nexus:30110" ],
   "ContentPackFor": {
     "UniqueID": "Pathoschild.ContentPatcher"
   },

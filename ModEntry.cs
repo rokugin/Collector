@@ -5,6 +5,7 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.SpecialOrders;
+using System.Reflection;
 using SObject = StardewValley.Object;
 
 namespace Collector;
@@ -303,10 +304,13 @@ internal class ModEntry : Mod {
         cm.AddBoolOption(ModManifest, () => Config.CollectSpringOnions, v => Config.CollectSpringOnions = v, I18n.SpringOnions, I18n.SpringOnions_Desc);
         cm.AddBoolOption(ModManifest, () => Config.CollectTeaBushes, v => Config.CollectTeaBushes = v, I18n.TeaBushes, I18n.TeaBushes_Desc);
         cm.AddBoolOption(ModManifest, () => Config.CollectTreeForage, v => Config.CollectTreeForage = v, I18n.TreeForage, I18n.TreeForage_Desc);
+
+        string? version = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
+        Log.Info($"\nFinished setting up Collector v{version}\n", true);
     }
 
     void RegisterContentPatcherTokens() {
-        var api = this.Helper.ModRegistry.GetApi<IContentPatcherAPI>("Pathoschild.ContentPatcher");
+        var api = Helper.ModRegistry.GetApi<IContentPatcherAPI>("Pathoschild.ContentPatcher");
 
         api?.RegisterToken(ModManifest, "GrabberRecipes", () => { return Config.GrabberRecipes ? ["true"] : ["false"]; });
 
