@@ -210,7 +210,7 @@ internal class ModEntry : Mod {
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e) {
         if (!Helper.ModRegistry.IsLoaded("rokugin.collectorcp")) {
-            Log.Warn("\nCP component missing, please check your installation.\nWithout CP component, mod will only function if cheats are enabled.");
+            Log.Warn("\nCP component missing, please check your installation.\nWithout CP component, mod will only function if cheats are enabled.\n");
         }
 
         RegisterContentPatcherTokens();
