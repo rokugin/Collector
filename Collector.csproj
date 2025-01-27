@@ -8,12 +8,12 @@
 		<LangVersion>12.0</LangVersion>
 		<Name>Collector</Name>
 		<Authors>rokugin</Authors>
-		<Version>1.0.3</Version>
 		<Description>Adds Collector big craftable that collects various items from the map.</Description>
 		<UniqueId>rokugin.collector</UniqueId>
 		<MinimumApiVersion>4.1.0</MinimumApiVersion>
 		<MinimumGameVersion>1.6.15</MinimumGameVersion>
 		<UpdateKeys>Nexus:30110</UpdateKeys>
+		<Version>1.1.0</Version>
 	</PropertyGroup>
 
 	<ItemGroup>

@@ -45,6 +45,8 @@
   "global-collector.desc": "Enables the use of the global Collector hotkey, which collects from every location. Also effects panning spots if enabled.\nWarning: Will cause lag when combined with Garbage Cans.\nDoes not run on day start.\nDefault: false",
   "global-collector.func": "Perform Global Collection",
   "global-collector.func-desc": "Keybinds to manually perform global collection action.",
+  "daily-global": "Daily Global Collection",
+  "daily-global.desc": "Makes the global collection task happen every day on day start.\nRequires Allow Global Collector to be enabled.\nDefault: false",
   "inventory-anywhere": "Allow Collector Inventory Anywhere",
   "inventory-anywhere.desc": "Enables the Open Collector Inventory hotkey, allowing access to the inventory from anywhere.\nDefault: false",
   "inventory-anywhere.func": "Open Collector Inventory",

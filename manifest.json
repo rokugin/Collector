@@ -10,7 +10,7 @@
   "UniqueID": "rokugin.collector",
   "Name": "Collector",
   "Author": "rokugin",
-  "Version": "1.0.3",
+  "Version": "1.1.0",
   "Description": "Adds Collector big craftable that collects various items from the map.",
   "MinimumApiVersion": "4.1.0",
   "MinimumGameVersion": "1.6.15",

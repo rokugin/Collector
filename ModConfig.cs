@@ -38,6 +38,7 @@ internal class ModConfig {
     public bool CollectCrabPots { get; set; } = true;
 
     public bool AllowGlobalCollector { get; set; } = false;
+    public bool DailyGlobalCollector { get; set; } = false;
     public bool OpenCollectorInventoryAnywhere { get; set; } = false;
     public bool ShavingEnchantment { get; set; } = false;
     public int AxeUpgradeLevel { get; set; } = 1;

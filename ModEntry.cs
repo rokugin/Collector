@@ -179,6 +179,19 @@ internal class ModEntry : Mod {
             return true;
         });
 
+        if (Config.AllowGlobalCollector && Config.DailyGlobalCollector) {
+            DelayedAction delayedAction = new(2000);
+            delayedAction.behavior = () => {
+                Utility.ForEachLocation(location => {
+                    Collector.DoCollection(location);
+
+                    return true;
+                });
+            };
+
+            return;
+        }
+
         if (collectorLocations.Count < 1) return;
 
         string output = "\nCollector Locations:\n";
@@ -191,7 +204,7 @@ internal class ModEntry : Mod {
 
         if (!Config.RunOnDayStart) return;
         // iterate list of locations and perform collection in each location
-        DelayedAction action = new DelayedAction(2000);
+        DelayedAction action = new(2000);
         action.behavior = () => {
             foreach (var location in collectorLocations) {
                 Collector.DoCollection(location);
@@ -201,7 +214,7 @@ internal class ModEntry : Mod {
     }
 
     private void OnDayEnding(object? sender, DayEndingEventArgs e) {
-        if (!Config.RunOnDayEnd || collectorLocations.Count < 1) return;
+        if (!Context.IsMainPlayer || !Config.RunOnDayEnd || collectorLocations.Count < 1) return;
 
         foreach (var location in collectorLocations) {
             Collector.DoCollection(location);
@@ -240,6 +253,8 @@ internal class ModEntry : Mod {
         cm.AddPage(ModManifest, "Cheats", I18n.Cheats);
         cm.AddBoolOption(ModManifest, () => Config.AllowGlobalCollector, v => Config.AllowGlobalCollector = v,
             I18n.GlobalCollector, I18n.GlobalCollector_Desc);
+        cm.AddBoolOption(ModManifest, () => Config.DailyGlobalCollector, v => Config.DailyGlobalCollector = v,
+            I18n.DailyGlobal, I18n.DailyGlobal_Desc);
         cm.AddKeybindList(ModManifest, () => Config.Controls.ActivateGlobalCollector, v => Config.Controls.ActivateGlobalCollector = v,
             I18n.GlobalCollector_Func, I18n.GlobalCollector_FuncDesc);
         cm.AddBoolOption(ModManifest, () => Config.OpenCollectorInventoryAnywhere, v => Config.OpenCollectorInventoryAnywhere = v,
