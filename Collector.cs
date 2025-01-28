@@ -255,7 +255,7 @@ public class Collector {
             Log.Error($"\nException in CollectGarbageCans.\nError message:\n{e.Message}");
         }
     }
-    
+
     public void CollectGardenPot(SObject obj) {
         try {
             if (collectGardenPots && obj is IndoorPot pot) {
@@ -605,18 +605,53 @@ public class Collector {
     public void CollectBush(LargeTerrainFeature feature) {
         try {
             if (collectBerryBushes && feature is Bush bush && bush.size.Value == 1 && bush.tileSheetOffset.Value == 1) {
-                Item item = null!;
+                SObject item = null!;
                 int number = 0;
+                int quality = 0;
+                //if (ModEntry.ModHelper.ModRegistry.IsLoaded("DaLion.Professions") && ModEntry.WoL is not null) {
+                //    quality = ModEntry.WoL.GetEcologistForageQuality(randomPlayer);
+                //}
+                //if (ModEntry.ModHelper.ModRegistry.IsLoaded("DaLion.Professions") && obj.Edibility > 0) {
+                //    double multiplier = 0;
+                //    foreach (var farmer in Game1.getOnlineFarmers()) {
+                //        if (farmer.professions.Contains(116)) {
+                //            multiplier = 1;
+                //        } else if (farmer.professions.Contains(16)) {
+                //            multiplier = 0.5;
+                //        }
+                //    }
 
+                //    obj.Edibility = (int)(obj.Edibility * multiplier) + obj.Edibility;
+                //}
                 if (ModEntry.BBM is not null) {
                     string itemID = ModEntry.BBM.FakeShake(bush);
 
                     if (itemID != null) {
-                        item = ItemRegistry.Create(itemID);
+                        item = (SObject)ItemRegistry.Create(itemID);
                         number = 1 + randomPlayer.ForagingLevel / 4;
                         item.Stack = number;
+                        
+                        if (ModEntry.ModHelper.ModRegistry.IsLoaded("DaLion.Professions") && ModEntry.WoL is not null) {
+                            quality = ModEntry.WoL.GetEcologistForageQuality(randomPlayer);
+                        } else if (AnyBotanist()) {
+                            quality = 4;
+                        }
 
-                        if (AnyBotanist()) item.Quality = 4;
+                        item.Quality = quality;
+
+                        if (ModEntry.ModHelper.ModRegistry.IsLoaded("DaLion.Professions") && item.Edibility > 0) {
+                            double multiplier = 0;
+                            foreach (var farmer in Game1.getOnlineFarmers()) {
+                                if (farmer.professions.Contains(116)) {
+                                    multiplier = 1;
+                                } else if (farmer.professions.Contains(16)) {
+                                    multiplier = 0.5;
+                                }
+                            }
+
+                            item.Edibility = (int)(item.Edibility * multiplier) + item.Edibility;
+                        }
+
                         AddYieldInfo(item, feature.Tile, "Berry Bush");
                         itemsToCollect.Add(item);
                         OnlineFarmersGainExperience(Foraging, number);
@@ -630,10 +665,29 @@ public class Collector {
                 bush.tileSheetOffset.Value = 0;
                 bush.setUpSourceRect();
                 number = 1 + randomPlayer.ForagingLevel / 4;
-                item = ItemRegistry.Create(shakeOff).getOne();
+                item = (SObject)ItemRegistry.Create(shakeOff).getOne();
                 item.Stack = number;
 
-                if (AnyBotanist()) item.Quality = 4;
+                if (ModEntry.ModHelper.ModRegistry.IsLoaded("DaLion.Professions") && ModEntry.WoL is not null) {
+                    quality = ModEntry.WoL.GetEcologistForageQuality(randomPlayer);
+                } else if (AnyBotanist()) {
+                    quality = 4;
+                }
+
+                item.Quality = quality;
+
+                if (ModEntry.ModHelper.ModRegistry.IsLoaded("DaLion.Professions") && item.Edibility > 0) {
+                    double multiplier = 0;
+                    foreach (var farmer in Game1.getOnlineFarmers()) {
+                        if (farmer.professions.Contains(116)) {
+                            multiplier = 1;
+                        } else if (farmer.professions.Contains(16)) {
+                            multiplier = 0.5;
+                        }
+                    }
+
+                    item.Edibility = (int)(item.Edibility * multiplier) + item.Edibility;
+                }
 
                 AddYieldInfo(item, feature.Tile, "Berry Bush");
                 itemsToCollect.Add(item);

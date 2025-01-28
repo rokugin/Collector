@@ -188,7 +188,7 @@ internal class ModEntry : Mod {
                     return true;
                 });
             };
-
+            Game1.delayedActions.Add(delayedAction);
             return;
         }
 
@@ -320,8 +320,11 @@ internal class ModEntry : Mod {
         cm.AddBoolOption(ModManifest, () => Config.CollectTeaBushes, v => Config.CollectTeaBushes = v, I18n.TeaBushes, I18n.TeaBushes_Desc);
         cm.AddBoolOption(ModManifest, () => Config.CollectTreeForage, v => Config.CollectTreeForage = v, I18n.TreeForage, I18n.TreeForage_Desc);
 
-        string? version = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
-        Log.Info($"\nFinished setting up Collector v{version}\n", true);
+        Version? version = Assembly.GetExecutingAssembly().GetName().Version;
+        if (version != null) {
+            string s = $"{version.Major.ToString()}.{version.Minor.ToString()}.{version.Build.ToString()}.";
+            Log.Info($"\nFinished setting up Collector v{s}\n", true);
+        }
     }
 
     void RegisterContentPatcherTokens() {
