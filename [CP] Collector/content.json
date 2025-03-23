@@ -212,7 +212,8 @@
                 "MailReceived": "{{ModId}}_CollectorDesignEndFlag"
               }
             }
-          ]
+          ],
+          "CustomFields": { "rokugin.collector_untimed_order": "true" }
         }
       }
     }
